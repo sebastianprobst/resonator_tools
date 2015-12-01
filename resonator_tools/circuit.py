@@ -6,15 +6,28 @@ from scipy.constants import hbar
 from utilities import plotting, save_load, Watt2dBm, dBm2Watt
 from circlefit import circlefit
 from calibration import calibration
-        
+
+##
+## z_data_raw denotes the raw data
+## z_data denotes the normalized data
+##        
     
 class reflection_port(circlefit, save_load, plotting, calibration):
     '''
     normal direct port probed in reflection
     '''
-    def __init__(self):
+    def __init__(self, f_data=None, z_data_raw=None):
         self.porttype = 'direct'
-        pass
+        self.fitresults = {}
+        self.z_data = None
+        if f_data!=None:
+            self.f_data = np.array(f_data)
+        else:
+            self.f_data=None
+        if z_data_raw!=None:
+            self.z_data_raw = np.array(z_data_raw)
+        else:
+            self.z_data=None
     
     def _S11(self,f,fr,k_c,k_i):
         '''
@@ -175,9 +188,18 @@ class notch_port(circlefit, save_load, plotting, calibration):
     '''
     notch type port probed in transmission
     '''
-    def __init__(self):
+    def __init__(self, f_data=None, z_data_raw=None):
         self.porttype = 'notch'
         self.fitresults = {}
+        self.z_data = None
+        if f_data!=None:
+            self.f_data = np.array(f_data)
+        else:
+            self.f_data=None
+        if z_data_raw!=None:
+            self.z_data_raw = np.array(z_data_raw)
+        else:
+            self.z_data_raw=None
     
     def get_delay(self,f_data,z_data,delay=None,ignoreslope=True,guess=True):
         '''
@@ -353,9 +375,17 @@ class transmission_port(circlefit,save_load,plotting):
     a class for handling transmission measurements
     '''
     
-    def __init__(self):
+    def __init__(self,f_data=None,z_data_raw=None):
         self.porttype = 'transm'
         self.fitresults = {}
+        if f_data!=None:
+            self.f_data = np.array(f_data)
+        else:
+            self.f_data=None
+        if z_data_raw!=None:
+            self.z_data_raw = np.array(z_data_raw)
+        else:
+            self.z_data=None
         
     def _S21(self,f,fr,Ql,A):
         return A**2/(1.+4.*Ql**2*((f-fr)/fr)**2) 

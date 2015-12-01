@@ -104,8 +104,8 @@ class save_load(object):
         else: warnings.warn("Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'.", SyntaxWarning)
     
     def add_data(self,f_data,z_data):
-        self.f_data_raw = f_data
-        self.z_data_raw = z_data
+        self.f_data = np.array(f_data)
+        self.z_data_raw = np.array(z_data)
         
     def cut_data(self,f1,f2):
         def findpos(f_data,val):
