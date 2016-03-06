@@ -393,7 +393,7 @@ class transmission_port(circlefit,save_load,plotting):
     def fit(self):
         self.ampsqr = (np.absolute(self.z_data_raw))**2
         p = [self.f_data[np.argmax(self.ampsqr)],1000.,np.amax(self.ampsqr)]
-        popt, pcov = spopt.curve_fit(self._S21, self.fdata, self.ampsqr,p)
+        popt, pcov = spopt.curve_fit(self._S21, self.f_data, self.ampsqr,p)
         errors = np.sqrt(np.diag(pcov))
         self.fitresults = {'fr':popt[0],'fr_err':errors[0],'Ql':popt[1],'Ql_err':errors[1],'Ampsqr':popt[2],'Ampsqr_err':errors[2]} 
     
