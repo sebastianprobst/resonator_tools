@@ -136,7 +136,7 @@ class save_load(object):
         if dtype == 'dBmagphasedeg' or dtype == 'linmagphasedeg':
             phase_conversion = 1./180.*np.pi
         else: 
-            phase_conversion = 0.
+            phase_conversion = 1.
         f = open(fname)
         lines = f.readlines()
         f.close()
@@ -148,13 +148,13 @@ class save_load(object):
                     lineinfo = line.split(delimiter)
                     f_data.append(float(lineinfo[0])*fdata_unit)
                     z_data_raw.append(np.complex(float(lineinfo[y1_col]),float(lineinfo[y2_col])))
-        elif dtype=='linmagphaserad' and dtype=='linmagphasedeg':
+        elif dtype=='linmagphaserad' or dtype=='linmagphasedeg':
             for line in lines:
                 if ((line!="\n") and (line[0]!="#") and (line[0]!="!") and (line[0]!="M") and (line[0]!="P")):
                     lineinfo = line.split(delimiter)
                     f_data.append(float(lineinfo[0])*fdata_unit)
                     z_data_raw.append(float(lineinfo[y1_col])*np.exp( np.complex(0.,phase_conversion*float(lineinfo[y2_col]))))
-        elif dtype=='dBmagphaserad' and dtype=='dBmagphasedeg':
+        elif dtype=='dBmagphaserad' or dtype=='dBmagphasedeg':
             for line in lines:
                 if ((line!="\n") and (line[0]!="#") and (line[0]!="!") and (line[0]!="M") and (line[0]!="P")):
                     lineinfo = line.split(delimiter)
