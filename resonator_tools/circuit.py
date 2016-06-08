@@ -156,8 +156,8 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         '''
         if self.fitresults!={}:
             fr = self.fitresults['fr']
-            k_c = fr/self.fitresults['Qc']
-            k_i = fr/self.fitresults['Qi']
+            k_c = 2*np.pi*fr/self.fitresults['Qc']
+            k_i = 2*np.pi*fr/self.fitresults['Qi']
             if unit=='dBm':
                 return Watt2dBm(1./(4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2)))
             elif unit=='watt':
@@ -177,8 +177,8 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             if unit=='dBm':
                 power = dBm2Watt(power)
             fr = self.fitresults['fr']
-            k_c = fr/self.fitresults['Qc']
-            k_i = fr/self.fitresults['Qi']
+            k_c = 2*np.pi*fr/self.fitresults['Qc']
+            k_i = 2*np.pi*fr/self.fitresults['Qi']
             return 4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2) * power
         else:
             warnings.warn('Please perform the fit first',UserWarning)
@@ -343,8 +343,8 @@ class notch_port(circlefit, save_load, plotting, calibration):
         '''
         if self.fitresults!={}:
             fr = self.fitresults['fr']
-            k_c = fr/self.fitresults['absQc']
-            k_i = fr/self.fitresults['Qi_dia_corr']
+            k_c = 2*np.pi*fr/self.fitresults['absQc']
+            k_i = 2*np.pi*fr/self.fitresults['Qi_dia_corr']
             if unit=='dBm':
                 return Watt2dBm(1./(4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2)))
             elif unit=='watt':
@@ -363,8 +363,8 @@ class notch_port(circlefit, save_load, plotting, calibration):
             if unit=='dBm':
                 power = dBm2Watt(power)
             fr = self.fitresults['fr']
-            k_c = fr/self.fitresults['Qc']
-            k_i = fr/self.fitresults['Qi']
+            k_c = 2*np.pi*fr/self.fitresults['Qc']
+            k_i = 2*np.pi*fr/self.fitresults['Qi']
             return 4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2) * power
         else:
             warnings.warn('Please perform the fit first',UserWarning)
