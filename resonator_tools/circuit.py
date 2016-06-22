@@ -53,7 +53,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             A2 = 0
         else:
             z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
-        if delay==None:
+        if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
             else:
@@ -91,8 +91,8 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         S11 version of the circlefit
         '''
     
-        if fr==None: fr=f_data[np.argmin(np.absolute(z_data))]
-        if Ql==None: Ql=1e6
+        if fr is None: fr=f_data[np.argmin(np.absolute(z_data))]
+        if Ql is None: Ql=1e6
         xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
         phi0 = -np.arcsin(yc/r0)
         theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
@@ -214,7 +214,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
             A2 = 0
         else:
             z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
-        if delay==None:
+        if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
             else:
@@ -268,8 +268,8 @@ class notch_port(circlefit, save_load, plotting, calibration):
         also, check out [5] S. Probst et al. "Efficient and reliable analysis of noisy complex scatterung resonator data for superconducting quantum circuits" (in preparation)
         '''
     
-        if fr==None: fr=f_data[np.argmin(np.absolute(z_data))]
-        if Ql==None: Ql=1e6
+        if fr is None: fr=f_data[np.argmin(np.absolute(z_data))]
+        if Ql is None: Ql=1e6
         xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
         phi0 = -np.arcsin(yc/r0)
         theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
