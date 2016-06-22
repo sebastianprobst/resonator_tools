@@ -20,11 +20,11 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         self.porttype = 'direct'
         self.fitresults = {}
         self.z_data = None
-        if f_data!=None:
+        if f_data is not None:
             self.f_data = np.array(f_data)
         else:
             self.f_data=None
-        if z_data_raw!=None:
+        if z_data_raw is not None:
             self.z_data_raw = np.array(z_data_raw)
         else:
             self.z_data=None
@@ -53,7 +53,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             A2 = 0
         else:
             z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
-        if delay==None:
+        if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
             else:
@@ -91,8 +91,8 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         S11 version of the circlefit
         '''
     
-        if fr==None: fr=f_data[np.argmin(np.absolute(z_data))]
-        if Ql==None: Ql=1e6
+        if fr is None: fr=f_data[np.argmin(np.absolute(z_data))]
+        if Ql is None: Ql=1e6
         xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
         phi0 = -np.arcsin(yc/r0)
         theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
@@ -111,7 +111,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             chi_square, cov = self._get_cov_fast_directrefl(f_data,z_data,p)
             #chi_square, cov = rt.get_cov(rt.residuals_notch_ideal,f_data,z_data,p)
     
-            if cov!=None:
+            if cov is not None:
                 errors = np.sqrt(np.diagonal(cov))
                 fr_err,Qc_err,Ql_err = errors
                 #calc Qi with error prop (sum the squares of the variances and covariaces)
@@ -192,11 +192,11 @@ class notch_port(circlefit, save_load, plotting, calibration):
         self.porttype = 'notch'
         self.fitresults = {}
         self.z_data = None
-        if f_data!=None:
+        if f_data is not None:
             self.f_data = np.array(f_data)
         else:
             self.f_data=None
-        if z_data_raw!=None:
+        if z_data_raw is not None:
             self.z_data_raw = np.array(z_data_raw)
         else:
             self.z_data_raw=None
@@ -214,7 +214,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
             A2 = 0
         else:
             z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
-        if delay==None:
+        if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
             else:
@@ -268,8 +268,8 @@ class notch_port(circlefit, save_load, plotting, calibration):
         also, check out [5] S. Probst et al. "Efficient and reliable analysis of noisy complex scatterung resonator data for superconducting quantum circuits" (in preparation)
         '''
     
-        if fr==None: fr=f_data[np.argmin(np.absolute(z_data))]
-        if Ql==None: Ql=1e6
+        if fr is None: fr=f_data[np.argmin(np.absolute(z_data))]
+        if Ql is None: Ql=1e6
         xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
         phi0 = -np.arcsin(yc/r0)
         theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
@@ -291,7 +291,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
             chi_square, cov = self._get_cov_fast_notch(f_data,z_data,p)
             #chi_square, cov = rt.get_cov(rt.residuals_notch_ideal,f_data,z_data,p)
     
-            if cov!=None:
+            if cov is not None:
                 errors = np.sqrt(np.diagonal(cov))
                 fr_err,absQc_err,Ql_err,phi0_err = errors
                 #calc Qi with error prop (sum the squares of the variances and covariaces)
@@ -378,11 +378,11 @@ class transmission_port(circlefit,save_load,plotting):
     def __init__(self,f_data=None,z_data_raw=None):
         self.porttype = 'transm'
         self.fitresults = {}
-        if f_data!=None:
+        if f_data is not None:
             self.f_data = np.array(f_data)
         else:
             self.f_data=None
-        if z_data_raw!=None:
+        if z_data_raw is not None:
             self.z_data_raw = np.array(z_data_raw)
         else:
             self.z_data=None
