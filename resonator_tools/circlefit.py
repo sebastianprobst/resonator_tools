@@ -276,7 +276,7 @@ class circlefit(object):
         wrapper for get_cov, only gives the errors and chisquare
         '''
         chisqr, cov = self._get_cov(residual,xdata,ydata,fitparams)
-        if cov!=None:
+        if cov is not None:
             errors = np.sqrt(np.diagonal(cov))
         else:
             errors = None
