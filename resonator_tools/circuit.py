@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 import scipy.optimize as spopt
 from scipy.constants import hbar
+from scipy.interpolate import splrep, splev
 
 from utilities import plotting, save_load, Watt2dBm, dBm2Watt
 from circlefit import circlefit
@@ -49,10 +50,25 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         maxval = np.max(np.absolute(z_data))
         z_data = z_data/maxval
         A1, A2, A3, A4, fr, Ql = self._fit_skewed_lorentzian(f_data,z_data)
+        if self.df_error/fr > 0.0001 or self.dQl_error/Ql>0.1:
+            print "WARNING: Calibration using Lorentz fit failed, trying phase fit..."
+            A1 = np.mean(np.absolute(z_data))
+            A2 = 0.
+            A3 = 0.
+            A4 = 0.
+            #fr = np.mean(f_data)
+            f = splrep(f_data,np.angle(z_data),k=5,s=3)
+            fr = f_data[np.argmax(np.absolute(splev(f_data,f,der=1)))]
+            Ql = 1e4
         if ignoreslope==True:
-            A2 = 0
+            A2 = 0.
         else:
-            z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
+            A2 = 0.
+            print "WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting."
+            print "see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline."
+            print "There is also an example ipython notebook for using this function."
+            print "However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system."
+            #z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
         if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
@@ -62,11 +78,11 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         params = [A1, A2, A3, A4, fr, Ql]
         return delay, params 
     
-    def do_calibration(self,f_data,z_data,ignoreslope=True,guessdelay=True):
+    def do_calibration(self,f_data,z_data,ignoreslope=True,guessdelay=True,fixed_delay=None):
         '''
         calculating parameters for normalization
         '''
-        delay, params = self.get_delay(f_data,z_data,ignoreslope=ignoreslope,guess=guessdelay)
+        delay, params = self.get_delay(f_data,z_data,ignoreslope=ignoreslope,guess=guessdelay,delay=fixed_delay)
         z_data = (z_data-params[1]*(f_data-params[4]))*np.exp(2.*1j*np.pi*delay*f_data)
         xc, yc, r0 = self._fit_circle(z_data)
         zc = np.complex(xc,yc)
@@ -132,12 +148,12 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         return results
         
     
-    def autofit(self):
+    def autofit(self,electric_delay=None):
         '''
         automatic calibration and fitting
         '''
         delay, amp_norm, alpha, fr, Ql, A2, frcal =\
-                self.do_calibration(self.f_data,self.z_data_raw,ignoreslope=True,guessdelay=False)
+                self.do_calibration(self.f_data,self.z_data_raw,ignoreslope=True,guessdelay=False,fixed_delay=electric_delay)
         self.z_data = self.do_normalization(self.f_data,self.z_data_raw,delay,amp_norm,alpha,A2,frcal)
         self.fitresults = self.circlefit(self.f_data,self.z_data,fr,Ql,refine_results=False,calc_errors=True)
         self.z_data_sim = A2*(self.f_data-frcal)+self._S11_directrefl(self.f_data,fr=self.fitresults["fr"],Ql=self.fitresults["Ql"],Qc=self.fitresults["Qc"],a=amp_norm,alpha=alpha,delay=delay)
@@ -211,9 +227,14 @@ class notch_port(circlefit, save_load, plotting, calibration):
         z_data = z_data/maxval
         A1, A2, A3, A4, fr, Ql = self._fit_skewed_lorentzian(f_data,z_data)
         if ignoreslope==True:
-            A2 = 0
+            A2 = 0.
         else:
-            z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
+            A2 = 0.
+            print "WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting."
+            print "see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline."
+            print "There is also an example ipython notebook for using this function."
+            print "However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system."
+            #z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
         if delay is None:
             if guess==True:
                 delay = self._guess_delay(f_data,z_data)
