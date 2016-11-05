@@ -29,6 +29,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             self.z_data_raw = np.array(z_data_raw)
         else:
             self.z_data=None
+        self.phasefitsmooth = 3
     
     def _S11(self,f,fr,k_c,k_i):
         '''
@@ -57,7 +58,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             A3 = 0.
             A4 = 0.
             #fr = np.mean(f_data)
-            f = splrep(f_data,np.angle(z_data),k=5,s=3)
+            f = splrep(f_data,np.unwrap(np.angle(z_data)),k=5,s=self.phasefitsmooth)
             fr = f_data[np.argmax(np.absolute(splev(f_data,f,der=1)))]
             Ql = 1e4
         if ignoreslope==True:
