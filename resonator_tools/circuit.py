@@ -52,7 +52,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
         z_data = z_data/maxval
         A1, A2, A3, A4, fr, Ql = self._fit_skewed_lorentzian(f_data,z_data)
         if self.df_error/fr > 0.0001 or self.dQl_error/Ql>0.1:
-            print "WARNING: Calibration using Lorentz fit failed, trying phase fit..."
+            #print "WARNING: Calibration using Lorentz fit failed, trying phase fit..."
             A1 = np.mean(np.absolute(z_data))
             A2 = 0.
             A3 = 0.

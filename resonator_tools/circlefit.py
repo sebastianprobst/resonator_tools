@@ -95,11 +95,20 @@ class circlefit(object):
             
         p0 = [A1a, A2a , A3a, A4a, fra, Qla]
         #p_final = spopt.leastsq(residuals2,p0,args=(np.array(f_data),np.array(amplitude_sqr)))
-        popt, pcov = spopt.curve_fit(fitfunc, np.array(f_data), np.array(amplitude_sqr),p0=p0)
+        try:
+            popt, pcov = spopt.curve_fit(fitfunc, np.array(f_data), np.array(amplitude_sqr),p0=p0)
         #A1, A2, A3, A4, fr, Ql = p_final[0]
         #print p_final[0][5]
-        self.df_error = np.sqrt(pcov[4][4])
-        self.dQl_error = np.sqrt(pcov[5][5])
+            if pcov is not None:
+                self.df_error = np.sqrt(pcov[4][4])
+                self.dQl_error = np.sqrt(pcov[5][5])
+            else:
+                self.df_error = np.inf
+                self.dQl_error = np.inf
+        except:
+            popt = p0
+            self.df_error = np.inf
+            self.dQl_error = np.inf
         #return p_final[0]
         return popt
     
