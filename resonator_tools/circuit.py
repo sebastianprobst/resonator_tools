@@ -357,7 +357,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
         '''
         return a*np.exp(np.complex(0,alpha))*np.exp(-2j*np.pi*f*delay)*(1.-Ql/Qc*np.exp(1j*phi)/(1.+2j*Ql*(f-fr)/fr))    
     
-    def get_single_photon_limit(self,unit='dBm'):
+    def get_single_photon_limit(self,unit='dBm',diacorr=True):
         '''
         returns the amout of power in units of W necessary
         to maintain one photon on average in the cavity
@@ -365,8 +365,12 @@ class notch_port(circlefit, save_load, plotting, calibration):
         '''
         if self.fitresults!={}:
             fr = self.fitresults['fr']
-            k_c = 2*np.pi*fr/self.fitresults['absQc']
-            k_i = 2*np.pi*fr/self.fitresults['Qi_dia_corr']
+            if diacorr:
+                k_c = 2*np.pi*fr/self.fitresults['Qc_dia_corr']
+                k_i = 2*np.pi*fr/self.fitresults['Qi_dia_corr']
+            else:
+                k_c = 2*np.pi*fr/self.fitresults['absQc']
+                k_i = 2*np.pi*fr/self.fitresults['Qi_no_corr']
             if unit=='dBm':
                 return Watt2dBm(1./(4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2)))
             elif unit=='watt':
@@ -375,7 +379,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
             warnings.warn('Please perform the fit first',UserWarning)
             return None
         
-    def get_photons_in_resonator(self,power,unit='dBm'):
+    def get_photons_in_resonator(self,power,unit='dBm',diacorr=True):
         '''
         returns the average number of photons
         for a given power in units of W
@@ -385,8 +389,12 @@ class notch_port(circlefit, save_load, plotting, calibration):
             if unit=='dBm':
                 power = dBm2Watt(power)
             fr = self.fitresults['fr']
-            k_c = 2*np.pi*fr/self.fitresults['Qc']
-            k_i = 2*np.pi*fr/self.fitresults['Qi']
+            if diacorr:
+                k_c = 2*np.pi*fr/self.fitresults['Qc_dia_corr']
+                k_i = 2*np.pi*fr/self.fitresults['Qi_dia_corr']
+            else:
+                k_c = 2*np.pi*fr/self.fitresults['absQc']
+                k_i = 2*np.pi*fr/self.fitresults['Qi_no_corr']
             return 4.*k_c/(2.*np.pi*hbar*fr*(k_c+k_i)**2) * power
         else:
             warnings.warn('Please perform the fit first',UserWarning)
