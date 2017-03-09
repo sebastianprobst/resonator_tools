@@ -42,10 +42,10 @@ def PSD_rel(X,fs):
     f, P_xx = periodogram(dX,fs)
     return f, P_xx/Xs**2
     
-def freq_noise(X,fs,Q):
+def freq_noise(X,fs,Q,fr):
     '''
     returns the frequency noise in units
-    of 1/Hz
+    of Hz^2/Hz
     '''
     f, P = PSD_rel(X,fs)
-    return f, P/(4.*Q)
+    return f, P*fr**2/(4.*Q)
