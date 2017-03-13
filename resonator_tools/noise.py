@@ -40,7 +40,7 @@ class noisedata(object):
         self.P_Qref = periodogram(self._demean(np.imag(IQref)),fs=fs)
 
 ################################# 
-        #functions to 
+        #functions to evalate multiple things
     def P_I_eval_all(self):
         '''
         returns a 2D numpy array with all the results
@@ -57,6 +57,21 @@ class noisedata(object):
         comment = ['P_Iref','P_Irefnorm','P_Irefpower','P_refdtheta','P_refdphi','P_refdf','P_ref']
         return np.vstack((self.P_Iref,self.P_Irefnorm(),self.P_Irefpower(),self.P_refdtheta(),self.P_refdphi(),self.P_refdf(),self.P_ref())), comment
 
+    def P_Q_eval_all(self):
+        '''
+        returns a 2D numpy array with all the results
+        and a 1D list with the description
+        '''
+        comment = ['P_Q','P_Qnorm','P_Qpower']
+        return np.vstack((self.P_Q,self.P_Qnorm(),self.P_Qpower())), comment
+        
+    def P_Qref_eval_all(self):
+        '''
+        returns a 2D numpy array with all the results
+        and a 1D list with the description
+        '''
+        comment = ['P_Qref','P_Qrefnorm','P_Qrefpower']
+        return np.vstack((self.P_Qref,self.P_Qrefnorm(),self.P_Qrefpower())), comment
 
 ################################# 
         #helpers
