@@ -176,7 +176,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		#copy data
 		fmin, fmax = self.f_data.min(), self.f_data.max()
 		self.autofit()
-		delay = self._delay
+		self.__delay = self._delay
 		#prepare plot and slider
 		import matplotlib.pyplot as plt
 		from matplotlib.widgets import Slider, Button
@@ -204,12 +204,13 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		axdelay = plt.axes([0.25, 0.05, 0.65, 0.03], axisbg=axcolor)
 		axf2 = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
 		axf1 = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
-		sdelay = Slider(axdelay, 'delay', -abs(delay)*10., abs(delay)*10., valinit=delay,valfmt='%.10f')
+		sscale = 10.
+		sdelay = Slider(axdelay, 'delay', -1., 1., valinit=self.__delay/(sscale*self.__delay),valfmt='%f')
 		df = (fmax-fmin)*0.05
 		sf2 = Slider(axf2, 'f2', (fmin-df)*1e-9, (fmax+df)*1e-9, valinit=fmax*1e-9,valfmt='%.10f GHz')
 		sf1 = Slider(axf1, 'f1', (fmin-df)*1e-9, (fmax+df)*1e-9, valinit=fmin*1e-9,valfmt='%.10f GHz')
 		def update(val):
-			self.autofit(electric_delay=sdelay.val,fcrop=(sf1.val*1e9,sf2.val*1e9))
+			self.autofit(electric_delay=sdelay.val*sscale*self.__delay,fcrop=(sf1.val*1e9,sf2.val*1e9))
 			l0.set_data(self.f_data*1e-9,np.absolute(self.z_data))
 			l1.set_data(self.f_data*1e-9,np.angle(self.z_data))
 			l2.set_data(np.real(self.z_data),np.imag(self.z_data))
@@ -221,15 +222,18 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 			Qc_ann.set_text('Qc = %e +- %e' % (self.fitresults['Qc'],self.fitresults['Qc_err']))
 			Qi_ann.set_text('Qi = %e +- %e' % (self.fitresults['Qi'],self.fitresults['Qi_err']))
 			fig.canvas.draw_idle()
-		def OK(event):
-		    plt.close()
+		def btnclicked(event):
+			self.autofit(electric_delay=None,fcrop=(sf1.val*1e9,sf2.val*1e9))
+			self.__delay = self._delay
+			sdelay.reset()
 		sf1.on_changed(update)
 		sf2.on_changed(update)
 		sdelay.on_changed(update)
-		OKax = plt.axes([0.05, 0.1, 0.1, 0.04])
-		button = Button(OKax, 'OK', color=axcolor, hovercolor='0.975')
-		button.on_clicked(OK)
+		btnax = plt.axes([0.05, 0.1, 0.1, 0.04])
+		button = Button(btnax, 'auto-delay', color=axcolor, hovercolor='0.975')
+		button.on_clicked(btnclicked)
 		plt.show()	
+		plt.close()
 
 	def _S11_directrefl(self,f,fr=10e9,Ql=900,Qc=1000.,a=1.,alpha=0.,delay=.0):
 		'''
@@ -440,7 +444,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		#copy data
 		fmin, fmax = self.f_data.min(), self.f_data.max()
 		self.autofit()
-		delay = self._delay
+		self.__delay = self._delay
 		#prepare plot and slider
 		import matplotlib.pyplot as plt
 		from matplotlib.widgets import Slider, Button
@@ -468,12 +472,13 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		axdelay = plt.axes([0.25, 0.05, 0.65, 0.03], axisbg=axcolor)
 		axf2 = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
 		axf1 = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
-		sdelay = Slider(axdelay, 'delay', -abs(delay)*10., abs(delay)*10., valinit=delay,valfmt='%.10f')
+		sscale = 10.
+		sdelay = Slider(axdelay, 'delay', -1., 1., valinit=self.__delay/(sscale*self.__delay),valfmt='%f')
 		df = (fmax-fmin)*0.05
 		sf2 = Slider(axf2, 'f2', (fmin-df)*1e-9, (fmax+df)*1e-9, valinit=fmax*1e-9,valfmt='%.10f GHz')
 		sf1 = Slider(axf1, 'f1', (fmin-df)*1e-9, (fmax+df)*1e-9, valinit=fmin*1e-9,valfmt='%.10f GHz')
 		def update(val):
-			self.autofit(electric_delay=sdelay.val,fcrop=(sf1.val*1e9,sf2.val*1e9))
+			self.autofit(electric_delay=sdelay.val*sscale*self.__delay,fcrop=(sf1.val*1e9,sf2.val*1e9))
 			l0.set_data(self.f_data*1e-9,np.absolute(self.z_data))
 			l1.set_data(self.f_data*1e-9,np.angle(self.z_data))
 			l2.set_data(np.real(self.z_data),np.imag(self.z_data))
@@ -482,18 +487,21 @@ class notch_port(circlefit, save_load, plotting, calibration):
 			l2s.set_data(np.real(self.z_data_sim_norm[self._fid]),np.imag(self.z_data_sim_norm[self._fid]))
 			fr_ann.set_text('fr = %e Hz +- %e Hz' % (self.fitresults['fr'],self.fitresults['fr_err']))
 			Ql_ann.set_text('Ql = %e +- %e' % (self.fitresults['Ql'],self.fitresults['Ql_err']))
-			Qc_ann.set_text('Qc = %e +- %e' % (self.fitresults['absQc'],self.fitresults['absQc_err']))
-			Qi_ann.set_text('Qi = %e +- %e' % (self.fitresults['Qi_dia_corr'],self.fitresults['Qi_dia_corr_err']))
+			Qc_ann.set_text('|Qc| = %e +- %e' % (self.fitresults['absQc'],self.fitresults['absQc_err']))
+			Qi_ann.set_text('Qi_dia_corr = %e +- %e' % (self.fitresults['Qi_dia_corr'],self.fitresults['Qi_dia_corr_err']))
 			fig.canvas.draw_idle()
-		def OK(event):
-		    plt.close()
+		def btnclicked(event):
+			self.autofit(electric_delay=None,fcrop=(sf1.val*1e9,sf2.val*1e9))
+			self.__delay = self._delay
+			sdelay.reset()
 		sf1.on_changed(update)
 		sf2.on_changed(update)
 		sdelay.on_changed(update)
-		OKax = plt.axes([0.05, 0.1, 0.1, 0.04])
-		button = Button(OKax, 'OK', color=axcolor, hovercolor='0.975')
-		button.on_clicked(OK)
+		btnax = plt.axes([0.05, 0.1, 0.1, 0.04])
+		button = Button(btnax, 'auto-delay', color=axcolor, hovercolor='0.975')
+		button.on_clicked(btnclicked)
 		plt.show()	
+		plt.close()
 	
 	def _S21_notch(self,f,fr=10e9,Ql=900,Qc=1000.,phi=0.,a=1.,alpha=0.,delay=.0):
 		'''
