@@ -199,7 +199,6 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		Ql_ann = ax3.annotate('Ql = %e +- %e' % (self.fitresults['Ql'],self.fitresults['Ql_err']),xy=(0.1, 0.6), xycoords='axes fraction')
 		Qc_ann = ax3.annotate('Qc = %e +- %e' % (self.fitresults['Qc'],self.fitresults['Qc_err']),xy=(0.1, 0.4), xycoords='axes fraction')
 		Qi_ann = ax3.annotate('Qi = %e +- %e' % (self.fitresults['Qi'],self.fitresults['Qi_err']),xy=(0.1, 0.2), xycoords='axes fraction')
-		plt.axis([0, 1, -10, 10])
 		axcolor = 'lightgoldenrodyellow'
 		axdelay = plt.axes([0.25, 0.05, 0.65, 0.03], axisbg=axcolor)
 		axf2 = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
@@ -226,6 +225,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 			self.autofit(electric_delay=None,fcrop=(sf1.val*1e9,sf2.val*1e9))
 			self.__delay = self._delay
 			sdelay.reset()
+			update(event)
 		sf1.on_changed(update)
 		sf2.on_changed(update)
 		sdelay.on_changed(update)
@@ -467,7 +467,6 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		Ql_ann = ax3.annotate('Ql = %e +- %e' % (self.fitresults['Ql'],self.fitresults['Ql_err']),xy=(0.1, 0.6), xycoords='axes fraction')
 		Qc_ann = ax3.annotate('Qc = %e +- %e' % (self.fitresults['absQc'],self.fitresults['absQc_err']),xy=(0.1, 0.4), xycoords='axes fraction')
 		Qi_ann = ax3.annotate('Qi = %e +- %e' % (self.fitresults['Qi_dia_corr'],self.fitresults['Qi_dia_corr_err']),xy=(0.1, 0.2), xycoords='axes fraction')
-		plt.axis([0, 1, -10, 10])
 		axcolor = 'lightgoldenrodyellow'
 		axdelay = plt.axes([0.25, 0.05, 0.65, 0.03], axisbg=axcolor)
 		axf2 = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
@@ -494,6 +493,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 			self.autofit(electric_delay=None,fcrop=(sf1.val*1e9,sf2.val*1e9))
 			self.__delay = self._delay
 			sdelay.reset()
+			update(event)
 		sf1.on_changed(update)
 		sf2.on_changed(update)
 		sdelay.on_changed(update)
