@@ -31,7 +31,7 @@ class calibration(object):
 		L = len(y)
 		D = sparse.csc_matrix(np.diff(np.eye(L), 2))
 		w = np.ones(L)
-		for i in xrange(niter):
+		for i in range(niter):
 			W = sparse.spdiags(w, 0, L, L)
 			Z = W + lam * D.dot(D.transpose())
 			z = sparse.linalg.spsolve(Z, w*y)
