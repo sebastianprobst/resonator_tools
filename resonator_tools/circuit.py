@@ -52,7 +52,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		z_data = z_data/maxval
 		A1, A2, A3, A4, fr, Ql = self._fit_skewed_lorentzian(f_data,z_data)
 		if self.df_error/fr > 0.0001 or self.dQl_error/Ql>0.1:
-			#print "WARNING: Calibration using Lorentz fit failed, trying phase fit..."
+			#print("WARNING: Calibration using Lorentz fit failed, trying phase fit...")
 			A1 = np.mean(np.absolute(z_data))
 			A2 = 0.
 			A3 = 0.
@@ -65,10 +65,10 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 			A2 = 0.
 		else:
 			A2 = 0.
-			print "WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting."
-			print "see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline."
-			print "There is also an example ipython notebook for using this function."
-			print "However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system."
+			print("WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting.")
+			print("see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline.")
+			print("There is also an example ipython notebook for using this function.")
+			print("However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system.")
 			#z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
 		if delay is None:
 			if guess==True:
@@ -115,7 +115,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
 		z_data_corr = self._center(z_data,np.complex(xc,yc))
 		theta0, Ql, fr = self._phase_fit(f_data,z_data_corr,theta0,Ql,fr)
-		#print "Ql from phasefit is: " + str(Ql)
+		#print("Ql from phasefit is: " + str(Ql))
 		Qi = Ql/(1.-r0)
 		Qc = 1./(1./Ql-1./Qi)
 	
@@ -138,7 +138,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 				errors = {"Ql_err":Ql_err, "Qc_err":Qc_err, "fr_err":fr_err,"chi_square":chi_square,"Qi_err":Qi_err}
 				results.update( errors )
 			else:
-				print "WARNING: Error calculation failed!"
+				print("WARNING: Error calculation failed!")
 		else:
 			#just calc chisquared:
 			fun2 = lambda x: self._residuals_notch_ideal(x,f_data,z_data)**2
@@ -307,10 +307,10 @@ class notch_port(circlefit, save_load, plotting, calibration):
 			A2 = 0.
 		else:
 			A2 = 0.
-			print "WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting."
-			print "see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline."
-			print "There is also an example ipython notebook for using this function."
-			print "However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system."
+			print("WARNING: The ignoreslope option is ignored! Corrections to the baseline should be done manually prior to fitting.")
+			print("see also: resonator_tools.calibration.fit_baseline_amp() etc. for help on fitting the baseline.")
+			print("There is also an example ipython notebook for using this function.")
+			print("However, make sure to understand the impact of the baseline (parasitic coupled resonances etc.) on your system.")
 			#z_data = (np.absolute(z_data)-A2*(f_data-fr)) * np.exp(np.angle(z_data)*1j)  #usually not necessary
 		if delay is None:
 			if guess==True:
@@ -373,7 +373,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
 		z_data_corr = self._center(z_data,np.complex(xc,yc))
 		theta0, Ql, fr = self._phase_fit(f_data,z_data_corr,theta0,Ql,fr)
-		#print "Ql from phasefit is: " + str(Ql)
+		#print("Ql from phasefit is: " + str(Ql))
 		absQc = Ql/(2.*r0)
 		complQc = absQc*np.exp(1j*((-1.)*phi0))
 		Qc = 1./(1./complQc).real	# here, taking the real part of (1/complQc) from diameter correction method
@@ -407,7 +407,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 				errors = {"phi0_err":phi0_err, "Ql_err":Ql_err, "absQc_err":absQc_err, "fr_err":fr_err,"chi_square":chi_square,"Qi_no_corr_err":Qi_no_corr_err,"Qi_dia_corr_err": Qi_dia_corr_err}
 				results.update( errors )
 			else:
-				print "WARNING: Error calculation failed!"
+				print("WARNING: Error calculation failed!")
 		else:
 			#just calc chisquared:
 			fun2 = lambda x: self._residuals_notch_ideal(x,f_data,z_data)**2
