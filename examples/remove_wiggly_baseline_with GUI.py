@@ -26,8 +26,8 @@ port1.GUIbaselinefit()
 
 # fit the corrected data
 port1.GUIfit()
-print "Fit results:", port1.fitresults
+print("Fit results:", port1.fitresults)
 port1.plotall()
-print "single photon limit:", port1.get_single_photon_limit(), "dBm"
-print "done"
+print("single photon limit:", port1.get_single_photon_limit(), "dBm")
+print("done")
 
