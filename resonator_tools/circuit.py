@@ -595,7 +595,7 @@ class resonator(object):
 		self.port = {}
 		self.transm = {}
 		if len(ports) > 0:
-			for key, pname in ports.iteritems():
+			for key, pname in iter(ports.items()):
 				if pname=='direct':
 					self.port.update({key:reflection_port()})
 				elif pname=='notch':
