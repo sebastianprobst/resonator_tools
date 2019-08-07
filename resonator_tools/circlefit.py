@@ -68,7 +68,7 @@ class circlefit(object):
         p0 = Ql
         p_final = spopt.leastsq(lambda a,b,c: residuals_4(a,b,c,theta0,fr),p0,args=(f_data,phase))#,ftol=1e-12,xtol=1e-12)
         Ql = p_final[0]
-        p0 = [theta0, Ql, fr]
+        p0 = np.array([theta0, Ql, fr], dtype='float64') 
         p_final = spopt.leastsq(residuals_5,p0,args=(f_data,phase))
         return p_final[0]
     
