@@ -321,7 +321,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		params = [A1, A2, A3, A4, fr, Ql]
 		return delay, params	
 	
-	def do_calibration(self,f_data,z_data,ignoreslope=True,guessdelay=True,fixed_delay=None):
+	def do_calibration(self,f_data,z_data,ignoreslope=True,guessdelay=True,fixed_delay=None, Ql_guess=None, fr_guess=None):
 		'''
 		performs an automated calibration and tries to determine the prefactors a, alpha, delay
 		fr, Ql, and a possible slope are extra information, which can be used as start parameters for subsequent fits
@@ -332,7 +332,10 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		z_data = (z_data-params[1]*(f_data-params[4]))*np.exp(2.*1j*np.pi*delay*f_data)
 		xc, yc, r0 = self._fit_circle(z_data)
 		zc = np.complex(xc,yc)
-		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,np.absolute(params[5]),params[4])
+		if Ql_guess is None: Ql_guess=np.absolute(params[5]) # kiddi edit 25.4.2020
+		if fr_guess is None: fr_guess=params[4] # kiddi edit 25.4.2020
+		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,Ql_guess,fr_guess) # kiddi edit 25.4.2020
+		#fitparams = self._phase_fit(f_data, self._center(z_data, zc), 0., np.absolute(params[5]), params[4])
 		theta, Ql, fr = fitparams
 		beta = self._periodic_boundary(theta+np.pi,np.pi)
 		offrespoint = np.complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
@@ -417,7 +420,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 	
 		return results
 		
-	def autofit(self,electric_delay=None,fcrop=None):
+	def autofit(self,electric_delay=None,fcrop=None,Ql_guess=None, fr_guess=None):
 		'''
 		automatic calibration and fitting
 		electric_delay: set the electric delay manually
@@ -429,7 +432,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 			f1, f2 = fcrop
 			self._fid = np.logical_and(self.f_data>=f1,self.f_data<=f2)
 		delay, amp_norm, alpha, fr, Ql, A2, frcal =\
-				self.do_calibration(self.f_data[self._fid],self.z_data_raw[self._fid],ignoreslope=True,guessdelay=True,fixed_delay=electric_delay)
+				self.do_calibration(self.f_data[self._fid],self.z_data_raw[self._fid],ignoreslope=True,guessdelay=True,fixed_delay=electric_delay,Ql_guess=Ql_guess, fr_guess=fr_guess)
 		self.z_data = self.do_normalization(self.f_data,self.z_data_raw,delay,amp_norm,alpha,A2,frcal)
 		self.fitresults = self.circlefit(self.f_data[self._fid],self.z_data[self._fid],fr,Ql,refine_results=False,calc_errors=True)
 		self.z_data_sim = A2*(self.f_data-frcal)+self._S21_notch(self.f_data,fr=self.fitresults["fr"],Ql=self.fitresults["Ql"],Qc=self.fitresults["absQc"],phi=self.fitresults["phi0"],a=amp_norm,alpha=alpha,delay=delay)
