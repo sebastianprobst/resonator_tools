@@ -332,10 +332,9 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		z_data = (z_data-params[1]*(f_data-params[4]))*np.exp(2.*1j*np.pi*delay*f_data)
 		xc, yc, r0 = self._fit_circle(z_data)
 		zc = np.complex(xc,yc)
-		if Ql_guess is None: Ql_guess=np.absolute(params[5]) # kiddi edit 25.4.2020
-		if fr_guess is None: fr_guess=params[4] # kiddi edit 25.4.2020
-		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,Ql_guess,fr_guess) # kiddi edit 25.4.2020
-		#fitparams = self._phase_fit(f_data, self._center(z_data, zc), 0., np.absolute(params[5]), params[4])
+		if Ql_guess is None: Ql_guess=np.absolute(params[5]) 
+		if fr_guess is None: fr_guess=params[4] 
+		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,Ql_guess,fr_guess) 
 		theta, Ql, fr = fitparams
 		beta = self._periodic_boundary(theta+np.pi,np.pi)
 		offrespoint = np.complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
