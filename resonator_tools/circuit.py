@@ -86,11 +86,11 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		delay, params = self.get_delay(f_data,z_data,ignoreslope=ignoreslope,guess=guessdelay,delay=fixed_delay)
 		z_data = (z_data-params[1]*(f_data-params[4]))*np.exp(2.*1j*np.pi*delay*f_data)
 		xc, yc, r0 = self._fit_circle(z_data)
-		zc = np.complex(xc,yc)
+		zc = complex(xc,yc)
 		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,np.absolute(params[5]),params[4])
 		theta, Ql, fr = fitparams
 		beta = self._periodic_boundary(theta+np.pi,np.pi) ###
-		offrespoint = np.complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
+		offrespoint = complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
 		alpha = self._periodic_boundary(np.angle(offrespoint)+np.pi,np.pi)
 		#a = np.absolute(offrespoint)
 		#alpha = np.angle(zc)
@@ -113,7 +113,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
 		phi0 = -np.arcsin(yc/r0)
 		theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
-		z_data_corr = self._center(z_data,np.complex(xc,yc))
+		z_data_corr = self._center(z_data,complex(xc,yc))
 		theta0, Ql, fr = self._phase_fit(f_data,z_data_corr,theta0,Ql,fr)
 		#print("Ql from phasefit is: " + str(Ql))
 		Qi = Ql/(1.-r0)
@@ -239,7 +239,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 		'''
 		full model for notch type resonances
 		'''
-		return a*np.exp(np.complex(0,alpha))*np.exp(-2j*np.pi*f*delay) * ( 2.*Ql/Qc - 1. + 2j*Ql*(fr-f)/fr ) / ( 1. - 2j*Ql*(fr-f)/fr )	   
+		return a*np.exp(complex(0,alpha))*np.exp(-2j*np.pi*f*delay) * ( 2.*Ql/Qc - 1. + 2j*Ql*(fr-f)/fr ) / ( 1. - 2j*Ql*(fr-f)/fr )	   
 		
 	def get_single_photon_limit(self,unit='dBm'):
 		'''
@@ -331,13 +331,13 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		delay, params = self.get_delay(f_data,z_data,ignoreslope=ignoreslope,guess=guessdelay,delay=fixed_delay)
 		z_data = (z_data-params[1]*(f_data-params[4]))*np.exp(2.*1j*np.pi*delay*f_data)
 		xc, yc, r0 = self._fit_circle(z_data)
-		zc = np.complex(xc,yc)
+		zc = complex(xc,yc)
 		if Ql_guess is None: Ql_guess=np.absolute(params[5]) 
 		if fr_guess is None: fr_guess=params[4] 
 		fitparams = self._phase_fit(f_data,self._center(z_data,zc),0.,Ql_guess,fr_guess) 
 		theta, Ql, fr = fitparams
 		beta = self._periodic_boundary(theta+np.pi,np.pi)
-		offrespoint = np.complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
+		offrespoint = complex((xc+r0*np.cos(beta)),(yc+r0*np.sin(beta)))
 		alpha = np.angle(offrespoint)
 		a = np.absolute(offrespoint)
 		return delay, a, alpha, fr, Ql, params[1], params[4]
@@ -373,7 +373,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		xc, yc, r0 = self._fit_circle(z_data,refine_results=refine_results)
 		phi0 = -np.arcsin(yc/r0)
 		theta0 = self._periodic_boundary(phi0+np.pi,np.pi)
-		z_data_corr = self._center(z_data,np.complex(xc,yc))
+		z_data_corr = self._center(z_data,complex(xc,yc))
 		theta0, Ql, fr = self._phase_fit(f_data,z_data_corr,theta0,Ql,fr)
 		#print("Ql from phasefit is: " + str(Ql))
 		absQc = Ql/(2.*r0)
@@ -509,7 +509,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
 		'''
 		full model for notch type resonances
 		'''
-		return a*np.exp(np.complex(0,alpha))*np.exp(-2j*np.pi*f*delay)*(1.-Ql/Qc*np.exp(1j*phi)/(1.+2j*Ql*(f-fr)/fr))	 
+		return a*np.exp(complex(0,alpha))*np.exp(-2j*np.pi*f*delay)*(1.-Ql/Qc*np.exp(1j*phi)/(1.+2j*Ql*(f-fr)/fr))	 
 	
 	def get_single_photon_limit(self,unit='dBm',diacorr=True):
 		'''
