@@ -18,7 +18,7 @@ class circlefit(object):
     
     def _dist(self,x):
         np.absolute(x,x)
-        c = (x > np.pi).astype(np.int)
+        c = (x > np.pi).astype(int)
         return x+c*(-2.*x+2.*np.pi)  
         
     def _periodic_boundary(self,x,bound):
@@ -64,10 +64,10 @@ class circlefit(object):
         Ql, fr = p_final[0]
         p0 = fr
         p_final = spopt.leastsq(lambda a,b,c: residuals_3(a,b,c,theta0,Ql),p0,args=(f_data,phase))#,ftol=1e-12,xtol=1e-12)
-        fr = p_final[0]
+        fr = p_final[0][0]
         p0 = Ql
         p_final = spopt.leastsq(lambda a,b,c: residuals_4(a,b,c,theta0,fr),p0,args=(f_data,phase))#,ftol=1e-12,xtol=1e-12)
-        Ql = p_final[0]
+        Ql = p_final[0][0]
         p0 = np.array([theta0, Ql, fr], dtype='float64') 
         p_final = spopt.leastsq(residuals_5,p0,args=(f_data,phase))
         return p_final[0]
@@ -205,10 +205,10 @@ class circlefit(object):
         '''
         def funcsqr(p,x):
             fr,absQc,Ql,phi0,delay,a,alpha = p
-            return np.array([np.absolute( ( a*np.exp(np.complex(0,alpha))*np.exp(np.complex(0,-2.*np.pi*delay*x[i])) * ( 1 - (Ql/absQc*np.exp(np.complex(0,phi0)))/(np.complex(1,2*Ql*(x[i]-fr)/fr)) )  ) )**2 for i in range(len(x))])
+            return np.array([np.absolute( ( a*np.exp(complex(0,alpha))*np.exp(complex(0,-2.*np.pi*delay*x[i])) * ( 1 - (Ql/absQc*np.exp(complex(0,phi0)))/(complex(1,2*Ql*(x[i]-fr)/fr)) )  ) )**2 for i in range(len(x))])
         def residuals(p,x,y):
             fr,absQc,Ql,phi0,delay,a,alpha = p
-            err = [np.absolute( y[i] - ( a*np.exp(np.complex(0,alpha))*np.exp(np.complex(0,-2.*np.pi*delay*x[i])) * ( 1 - (Ql/absQc*np.exp(np.complex(0,phi0)))/(np.complex(1,2*Ql*(x[i]-fr)/fr)) )  ) ) for i in range(len(x))]
+            err = [np.absolute( y[i] - ( a*np.exp(complex(0,alpha))*np.exp(complex(0,-2.*np.pi*delay*x[i])) * ( 1 - (Ql/absQc*np.exp(complex(0,phi0)))/(complex(1,2*Ql*(x[i]-fr)/fr)) )  ) ) for i in range(len(x))]
             return err
         p0 = [fr,absQc,Ql,phi0,delay,a,alpha]
         (popt, params_cov, infodict, errmsg, ier) = spopt.leastsq(residuals,p0,args=(np.array(f_data),np.array(z_data)),full_output=True,maxfev=maxiter)
@@ -224,14 +224,14 @@ class circlefit(object):
     
     def _optimizedelay(self,f_data,z_data,Ql,fr,maxiter=4):
         xc,yc,r0 = self._fit_circle(z_data)
-        z_data = self._center(z_data,np.complex(xc,yc))
+        z_data = self._center(z_data,complex(xc,yc))
         theta, Ql, fr, slope = self._phase_fit_wslope(f_data,z_data,0.,Ql,fr,0.)
         delay = 0.
         for i in range(maxiter-1): #interate to get besser phase delay term
             delay = delay - slope/(2.*2.*np.pi)
             z_data_corr = self._remove_cable_delay(f_data,z_data,delay)
             xc, yc, r0 = self._fit_circle(z_data_corr)
-            z_data_corr2 = self._center(z_data_corr,np.complex(xc,yc))
+            z_data_corr2 = self._center(z_data_corr,complex(xc,yc))
             theta0, Ql, fr, slope = self._phase_fit_wslope(f_data,z_data_corr2,0.,Ql,fr,0.)
         delay = delay - slope/(2.*2.*np.pi)  #start final interation
         return delay
@@ -300,15 +300,15 @@ class circlefit(object):
     
     def _residuals_notch_full(self,p,x,y):
         fr,absQc,Ql,phi0,delay,a,alpha = p
-        err = np.absolute( y - ( a*np.exp(np.complex(0,alpha))*np.exp(np.complex(0,-2.*np.pi*delay*x)) * ( 1 - (Ql/absQc*np.exp(np.complex(0,phi0)))/(np.complex(1,2*Ql*(x-fr)/float(fr))) )  ) )
+        err = np.absolute( y - ( a*np.exp(complex(0,alpha))*np.exp(complex(0,-2.*np.pi*delay*x)) * ( 1 - (Ql/absQc*np.exp(complex(0,phi0)))/(complex(1,2*Ql*(x-fr)/float(fr))) )  ) )
         return err
     
     def _residuals_notch_ideal(self,p,x,y):
         fr,absQc,Ql,phi0 = p
         #if fr == 0: print(p)
         err = np.absolute( y - (  ( 1. - (Ql/float(absQc)*np.exp(1j*phi0))/(1+2j*Ql*(x-fr)/float(fr)) )  ) )
-        #if np.isinf((np.complex(1,2*Ql*(x-fr)/float(fr))).imag):
-         #   print(np.complex(1,2*Ql*(x-fr)/float(fr)))
+        #if np.isinf((complex(1,2*Ql*(x-fr)/float(fr))).imag):
+         #   print(complex(1,2*Ql*(x-fr)/float(fr)))
           #  print("x: " + str(x))
            # print("Ql: " +str(Ql))
             #print("fr: " +str(fr))
@@ -318,8 +318,8 @@ class circlefit(object):
         fr,absQc,Ql,phi0 = p
         #if fr == 0: print(p)
         err = y - (  ( 1. - (Ql/float(absQc)*np.exp(1j*phi0))/(1+2j*Ql*(x-fr)/float(fr)) )  )
-        #if np.isinf((np.complex(1,2*Ql*(x-fr)/float(fr))).imag):
-         #   print(np.complex(1,2*Ql*(x-fr)/float(fr)))
+        #if np.isinf((complex(1,2*Ql*(x-fr)/float(fr))).imag):
+         #   print(complex(1,2*Ql*(x-fr)/float(fr)))
           #  print("x: " + str(x))
            # print("Ql: " +str(Ql))
             #print("fr: " +str(fr))
@@ -329,8 +329,8 @@ class circlefit(object):
         fr,Qc,Ql = p
         #if fr == 0: print(p)
         err = y - ( 2.*Ql/Qc - 1. + 2j*Ql*(fr-x)/fr ) / ( 1. - 2j*Ql*(fr-x)/fr )
-        #if np.isinf((np.complex(1,2*Ql*(x-fr)/float(fr))).imag):
-         #   print(np.complex(1,2*Ql*(x-fr)/float(fr)))
+        #if np.isinf((complex(1,2*Ql*(x-fr)/float(fr))).imag):
+         #   print(complex(1,2*Ql*(x-fr)/float(fr)))
           #  print("x: " + str(x))
            # print("Ql: " +str(Ql))
             #print("fr: " +str(fr))
@@ -338,7 +338,7 @@ class circlefit(object):
     
     def _residuals_transm_ideal(self,p,x,y):
         fr,Ql = p
-        err = np.absolute( y -   ( 1./(np.complex(1,2*Ql*(x-fr)/float(fr))) )   )
+        err = np.absolute( y -   ( 1./(complex(1,2*Ql*(x-fr)/float(fr))) )   )
         return err
     
     

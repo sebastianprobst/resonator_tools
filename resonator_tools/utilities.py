@@ -147,20 +147,20 @@ class save_load(object):
 				if ((line!="\n") and (line[0]!="#") and (line[0]!="!")) :
 					lineinfo = line.split(delimiter)
 					f_data.append(float(lineinfo[0])*fdata_unit)
-					z_data_raw.append(np.complex(float(lineinfo[y1_col]),float(lineinfo[y2_col])))
+					z_data_raw.append(complex(float(lineinfo[y1_col]),float(lineinfo[y2_col])))
 		elif dtype=='linmagphaserad' or dtype=='linmagphasedeg':
 			for line in lines:
 				if ((line!="\n") and (line[0]!="#") and (line[0]!="!") and (line[0]!="M") and (line[0]!="P")):
 					lineinfo = line.split(delimiter)
 					f_data.append(float(lineinfo[0])*fdata_unit)
-					z_data_raw.append(float(lineinfo[y1_col])*np.exp( np.complex(0.,phase_conversion*float(lineinfo[y2_col]))))
+					z_data_raw.append(float(lineinfo[y1_col])*np.exp( complex(0.,phase_conversion*float(lineinfo[y2_col]))))
 		elif dtype=='dBmagphaserad' or dtype=='dBmagphasedeg':
 			for line in lines:
 				if ((line!="\n") and (line[0]!="#") and (line[0]!="!") and (line[0]!="M") and (line[0]!="P")):
 					lineinfo = line.split(delimiter)
 					f_data.append(float(lineinfo[0])*fdata_unit)
 					linamp = 10**(float(lineinfo[y1_col])/20.)
-					z_data_raw.append(linamp*np.exp( np.complex(0.,phase_conversion*float(lineinfo[y2_col]))))
+					z_data_raw.append(linamp*np.exp( complex(0.,phase_conversion*float(lineinfo[y2_col]))))
 		else:
 			warnings.warn("Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'.", SyntaxWarning)
 		self.f_data = np.array(f_data)
