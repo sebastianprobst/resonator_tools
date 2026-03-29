@@ -51,7 +51,10 @@ class circlefit(object):
             return err
 
         p0 = [theta0, Ql, fr, slope]
-        p_final = spopt.leastsq(residuals, p0, args=(np.array(f_data), np.array(phase)))
+        p_final = spopt.leastsq(
+            residuals, p0, args=(np.array(f_data), np.array(phase)),
+            ftol=1e-12, xtol=1e-12,
+        )
         return p_final[0]
 
     def _phase_fit(
@@ -91,26 +94,32 @@ class circlefit(object):
 
         p0 = [theta0, fr]
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_1(a, b, c, Ql), p0, args=(f_data, phase)
-        )  # ,ftol=1e-12,xtol=1e-12)
+            lambda a, b, c: residuals_1(a, b, c, Ql), p0, args=(f_data, phase),
+            ftol=1e-12, xtol=1e-12,
+        )
         theta0, fr = p_final[0]
         p0 = [Ql, fr]
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_2(a, b, c, theta0), p0, args=(f_data, phase)
-        )  # ,ftol=1e-12,xtol=1e-12)
+            lambda a, b, c: residuals_2(a, b, c, theta0), p0, args=(f_data, phase),
+            ftol=1e-12, xtol=1e-12,
+        )
         Ql, fr = p_final[0]
         p0 = fr
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_3(a, b, c, theta0, Ql), p0, args=(f_data, phase)
-        )  # ,ftol=1e-12,xtol=1e-12)
+            lambda a, b, c: residuals_3(a, b, c, theta0, Ql), p0, args=(f_data, phase),
+            ftol=1e-12, xtol=1e-12,
+        )
         fr = p_final[0][0]
         p0 = Ql
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_4(a, b, c, theta0, fr), p0, args=(f_data, phase)
-        )  # ,ftol=1e-12,xtol=1e-12)
+            lambda a, b, c: residuals_4(a, b, c, theta0, fr), p0, args=(f_data, phase),
+            ftol=1e-12, xtol=1e-12,
+        )
         Ql = p_final[0][0]
         p0 = np.array([theta0, Ql, fr], dtype="float64")
-        p_final = spopt.leastsq(residuals_5, p0, args=(f_data, phase))
+        p_final = spopt.leastsq(residuals_5, p0, args=(f_data, phase),
+            ftol=1e-12, xtol=1e-12,
+        )
         return p_final[0]
 
     def _fit_skewed_lorentzian(
@@ -133,7 +142,8 @@ class circlefit(object):
 
         p0 = [0.0, 0.0, 1e3]
         p_final = spopt.leastsq(
-            residuals, p0, args=(np.array(f_data), np.array(amplitude_sqr))
+            residuals, p0, args=(np.array(f_data), np.array(amplitude_sqr)),
+            ftol=1e-12, xtol=1e-12,
         )
         A2a, A4a, Qla = p_final[0]
 
@@ -345,6 +355,7 @@ class circlefit(object):
             delay,
             args=(f_data, z_data),
             maxfev=maxiter,
+            ftol=1e-12, xtol=1e-12,
         )
         return p_final[0][0]
 
@@ -373,6 +384,7 @@ class circlefit(object):
             delay,
             args=(f_data, z_data),
             maxfev=maxiter,
+            ftol=1e-12, xtol=1e-12,
         )
         return p_final[0][0]
 
@@ -441,6 +453,7 @@ class circlefit(object):
             args=(np.array(f_data), np.array(z_data)),
             full_output=True,
             maxfev=maxiter,
+            ftol=1e-12, xtol=1e-12,
         )
         popt, params_cov, infodict, errmsg, ier = result  # type: ignore
         len_ydata = len(np.array(f_data))
@@ -502,7 +515,9 @@ class circlefit(object):
             return temp
 
         p0 = [xc, yc, rc]
-        p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat))
+        p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat),
+            ftol=1e-12, xtol=1e-12,
+        )
         xc, yc, rc = p_final[0]
         return xc, yc, rc
 
@@ -537,7 +552,9 @@ class circlefit(object):
             return temp
 
         p0 = [rc]
-        p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat))
+        p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat),
+            ftol=1e-12, xtol=1e-12,
+        )
         return p_final[0][0]
 
     # def _get_errors(
@@ -669,7 +686,7 @@ class circlefit(object):
         A = np.dot(Jt, np.transpose(Jt))
         chisqr = 1.0 / float(len(xdata) - len(fitparams)) * (chi**2).sum()
         try:
-            cov = np.linalg.inv(A) * chisqr
+            cov = np.linalg.pinv(A) * chisqr
         except Exception:
             cov = None
         return chisqr, cov
@@ -708,7 +725,7 @@ class circlefit(object):
         A = np.dot(Jt, np.transpose(Jt))
         chisqr = 1.0 / float(len(xdata) - len(fitparams)) * (chi**2).sum()
         try:
-            cov = np.linalg.inv(A) * chisqr
+            cov = np.linalg.pinv(A) * chisqr
         except Exception:
             cov = None
         return chisqr, cov
