@@ -60,3 +60,4 @@ target/
 .ruff_cache/
 uv.lock
 .python-version
+.pytest_cache/
