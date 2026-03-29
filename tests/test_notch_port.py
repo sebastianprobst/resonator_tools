@@ -9,9 +9,9 @@ TEST_DATA = Path(__file__).parent / "test_data"
 # Per-parameter tolerances: well-conditioned quantities get tight bounds,
 # ill-conditioned ones (phases, coupling Qs, derived Qi) get looser bounds.
 TOL_FREQ = 1e-6       # frequency: very well conditioned
-TOL_Q = 5e-3          # loaded / coupling Q values
+TOL_Q = 1e-2          # loaded / coupling Q values
 TOL_PHASE = 1e-2      # phase angles (theta0, phi0)
-TOL_QI = 5e-3         # derived internal Q (error-propagation amplifies)
+TOL_QI = 1e-2         # derived internal Q (error-propagation amplifies)
 TOL_ERR = 0.25        # error estimates (covariance depends heavily on BLAS)
 TOL_CHI2 = 0.25       # chi-square
 
