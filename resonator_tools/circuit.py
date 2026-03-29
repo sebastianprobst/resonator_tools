@@ -104,7 +104,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
                 delay = self._guess_delay(f_data, z_data)
             else:
                 delay = 0.0
-            delay = self._fit_delay(f_data, z_data, delay, maxiter=200)
+            delay = self._fit_delay(f_data, z_data, delay, maxiter=0)
         params: list[float] = [
             float(A1),
             float(A2),
@@ -546,7 +546,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
                 delay = self._guess_delay(f_data, z_data)
             else:
                 delay = 0.0
-            delay = self._fit_delay(f_data, z_data, delay, maxiter=200)
+            delay = self._fit_delay(f_data, z_data, delay, maxiter=0)
         params: list[float] = [
             float(A1),
             float(A2),
