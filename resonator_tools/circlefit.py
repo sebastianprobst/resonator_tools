@@ -42,23 +42,33 @@ class circlefit(object):
         slope: float,
     ) -> npt.NDArray[np.float64]:
         phase = np.angle(z_data)
+        # Normalize so all parameters are ~O(1)
+        fr_scale = np.mean(f_data)
+        Ql_scale = max(abs(Ql), 1.0)
+        slope_scale = max(abs(slope), 1.0 / fr_scale)
+        x_norm = np.array(f_data) / fr_scale
 
-        def residuals(p, x, y):
-            theta0, Ql, fr, slope = p
+        def residuals(p, x_n, y):
+            theta0_n, Ql_n, fr_n, slope_n = p
+            _theta0 = theta0_n
+            _Ql = Ql_n * Ql_scale
+            _fr = fr_n * fr_scale
+            _slope = slope_n * slope_scale
             err = self._dist(
-                y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr)) - slope * x)
+                y - (_theta0 + 2.0 * np.arctan(2.0 * _Ql * (1.0 - x_n * fr_scale / _fr)) - _slope * x_n * fr_scale)
             )
             return err
 
-        p0 = [theta0, Ql, fr, slope]
+        p0 = [theta0, Ql / Ql_scale, fr / fr_scale, slope / slope_scale]
         p_final = spopt.leastsq(
             residuals,
             p0,
-            args=(np.array(f_data), np.array(phase)),
+            args=(x_norm, np.array(phase)),
             ftol=1e-12,
             xtol=1e-12,
         )
-        return p_final[0]
+        theta0_f, Ql_f, fr_f, slope_f = p_final[0]
+        return np.array([theta0_f, Ql_f * Ql_scale, fr_f * fr_scale, slope_f * slope_scale])
 
     def _phase_fit(
         self,
@@ -69,77 +79,83 @@ class circlefit(object):
         fr: float,
     ) -> npt.NDArray[np.float64]:
         phase = np.angle(z_data)
+        # Normalize: fit with fr_n = fr/fr_scale (~1), Ql_n = Ql/Ql_scale (~1)
+        fr_scale = np.mean(f_data)
+        Ql_scale = max(abs(Ql), 1.0)
+        x_norm = np.array(f_data) / fr_scale
 
-        def residuals_1(p, x, y, Ql):
-            theta0, fr = p
-            err = self._dist(y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr))))
-            return err
+        def _phase_model(x_n, theta0, Ql_n, fr_n):
+            return theta0 + 2.0 * np.arctan(2.0 * Ql_n * Ql_scale * (1.0 - x_n / fr_n))
 
-        def residuals_2(p, x, y, theta0):
-            Ql, fr = p
-            err = self._dist(y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr))))
-            return err
+        def residuals_1(p, x_n, y, Ql_n):
+            theta0, fr_n = p
+            return self._dist(y - _phase_model(x_n, theta0, Ql_n, fr_n))
 
-        def residuals_3(p, x, y, theta0, Ql):
-            fr = p
-            err = self._dist(y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr))))
-            return err
+        def residuals_2(p, x_n, y, theta0):
+            Ql_n, fr_n = p
+            return self._dist(y - _phase_model(x_n, theta0, Ql_n, fr_n))
 
-        def residuals_4(p, x, y, theta0, fr):
-            Ql = p
-            err = self._dist(y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr))))
-            return err
+        def residuals_3(p, x_n, y, theta0, Ql_n):
+            fr_n = p
+            return self._dist(y - _phase_model(x_n, theta0, Ql_n, fr_n))
 
-        def residuals_5(p, x, y):
-            theta0, Ql, fr = p
-            err = self._dist(y - (theta0 + 2.0 * np.arctan(2.0 * Ql * (1.0 - x / fr))))
-            return err
+        def residuals_4(p, x_n, y, theta0, fr_n):
+            Ql_n = p
+            return self._dist(y - _phase_model(x_n, theta0, Ql_n, fr_n))
 
-        p0 = [theta0, fr]
+        def residuals_5(p, x_n, y):
+            theta0, Ql_n, fr_n = p
+            return self._dist(y - _phase_model(x_n, theta0, Ql_n, fr_n))
+
+        fr_n = fr / fr_scale
+        Ql_n = Ql / Ql_scale
+
+        p0 = [theta0, fr_n]
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_1(a, b, c, Ql),
+            lambda a, b, c: residuals_1(a, b, c, Ql_n),
             p0,
-            args=(f_data, phase),
+            args=(x_norm, phase),
             ftol=1e-12,
             xtol=1e-12,
         )
-        theta0, fr = p_final[0]
-        p0 = [Ql, fr]
+        theta0, fr_n = p_final[0]
+        p0 = [Ql_n, fr_n]
         p_final = spopt.leastsq(
             lambda a, b, c: residuals_2(a, b, c, theta0),
             p0,
-            args=(f_data, phase),
+            args=(x_norm, phase),
             ftol=1e-12,
             xtol=1e-12,
         )
-        Ql, fr = p_final[0]
-        p0 = fr
+        Ql_n, fr_n = p_final[0]
+        p0 = fr_n
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_3(a, b, c, theta0, Ql),
+            lambda a, b, c: residuals_3(a, b, c, theta0, Ql_n),
             p0,
-            args=(f_data, phase),
+            args=(x_norm, phase),
             ftol=1e-12,
             xtol=1e-12,
         )
-        fr = p_final[0][0]
-        p0 = Ql
+        fr_n = p_final[0][0]
+        p0 = Ql_n
         p_final = spopt.leastsq(
-            lambda a, b, c: residuals_4(a, b, c, theta0, fr),
+            lambda a, b, c: residuals_4(a, b, c, theta0, fr_n),
             p0,
-            args=(f_data, phase),
+            args=(x_norm, phase),
             ftol=1e-12,
             xtol=1e-12,
         )
-        Ql = p_final[0][0]
-        p0 = np.array([theta0, Ql, fr], dtype="float64")
+        Ql_n = p_final[0][0]
+        p0 = np.array([theta0, Ql_n, fr_n], dtype="float64")
         p_final = spopt.leastsq(
             residuals_5,
             p0,
-            args=(f_data, phase),
+            args=(x_norm, phase),
             ftol=1e-12,
             xtol=1e-12,
         )
-        return p_final[0]
+        theta0_f, Ql_n_f, fr_n_f = p_final[0]
+        return np.array([theta0_f, Ql_n_f * Ql_scale, fr_n_f * fr_scale])
 
     def _fit_skewed_lorentzian(
         self, f_data: FloatArray, z_data: ComplexArray
@@ -149,13 +165,19 @@ class circlefit(object):
         A1a = np.minimum(amplitude_sqr[0], amplitude_sqr[-1])
         A3a = -np.max(amplitude_sqr)
         fra = f_data[np.argmin(amplitude_sqr)]
+        # Normalize frequency so fr parameter is ~O(1)
+        fr_scale = np.mean(f_data)
+        f_norm = np.array(f_data) / fr_scale
+        fra_n = fra / fr_scale
+        # Scale slope coefficients to match normalized frequency
+        amp_sqr = np.array(amplitude_sqr)
 
-        def residuals(p, x, y):
-            A2, A4, Ql = p
+        def residuals(p, x_n, y):
+            A2_n, A4_n, Ql = p
             err = y - (
                 A1a
-                + A2 * (x - fra)
-                + (A3a + A4 * (x - fra)) / (1.0 + 4.0 * Ql**2 * ((x - fra) / fra) ** 2)
+                + A2_n * fr_scale * (x_n - fra_n)
+                + (A3a + A4_n * fr_scale * (x_n - fra_n)) / (1.0 + 4.0 * Ql**2 * ((x_n - fra_n) / fra_n) ** 2)
             )
             return err
 
@@ -163,47 +185,42 @@ class circlefit(object):
         p_final = spopt.leastsq(
             residuals,
             p0,
-            args=(np.array(f_data), np.array(amplitude_sqr)),
+            args=(f_norm, amp_sqr),
             ftol=1e-12,
             xtol=1e-12,
         )
-        A2a, A4a, Qla = p_final[0]
+        A2a_n, A4a_n, Qla = p_final[0]
+        A2a = A2a_n
+        A4a = A4a_n
 
-        # def residuals2(p, x, y):
-        #     A1, A2, A3, A4, fr, Ql = p
-        #     err = y - (
-        #         A1
-        #         + A2 * (x - fr)
-        #         + (A3 + A4 * (x - fr)) / (1.0 + 4.0 * Ql**2 * ((x - fr) / fr) ** 2)
-        #     )
-        #     return err
-
-        def fitfunc(x, A1, A2, A3, A4, fr, Ql):
+        def fitfunc(x_n, A1, A2_n, A3, A4_n, fr_n, Ql):
             return (
                 A1
-                + A2 * (x - fr)
-                + (A3 + A4 * (x - fr)) / (1.0 + 4.0 * Ql**2 * ((x - fr) / fr) ** 2)
+                + A2_n * fr_scale * (x_n - fr_n)
+                + (A3 + A4_n * fr_scale * (x_n - fr_n)) / (1.0 + 4.0 * Ql**2 * ((x_n - fr_n) / fr_n) ** 2)
             )
 
-        p0 = [A1a, A2a, A3a, A4a, fra, Qla]
-        # p_final = spopt.leastsq(residuals2,p0,args=(np.array(f_data),np.array(amplitude_sqr)))
+        p0 = [A1a, A2a, A3a, A4a, fra_n, Qla]
         try:
             popt, pcov = spopt.curve_fit(
-                fitfunc, np.array(f_data), np.array(amplitude_sqr), p0=p0
+                fitfunc, f_norm, amp_sqr, p0=p0,
+                bounds=(
+                    [-np.inf, -np.inf, -np.inf, -np.inf, f_norm[0], 0],
+                    [np.inf, np.inf, np.inf, np.inf, f_norm[-1], np.inf],
+                ),
             )
-            # A1, A2, A3, A4, fr, Ql = p_final[0]
-            # print(p_final[0][5])
             if pcov is not None:
-                self.df_error = np.sqrt(pcov[4][4])
+                self.df_error = np.sqrt(pcov[4][4]) * fr_scale
                 self.dQl_error = np.sqrt(pcov[5][5])
             else:
                 self.df_error = np.inf
                 self.dQl_error = np.inf
+            # Convert back to original frequency units
+            popt[4] *= fr_scale  # fr
         except Exception:
-            popt = p0
+            popt = np.array([A1a, A2a, A3a, A4a, fra, Qla])
             self.df_error = np.inf
             self.dQl_error = np.inf
-        # return p_final[0]
         return popt  # type: ignore
 
     def _fit_circle(
@@ -362,8 +379,11 @@ class circlefit(object):
         delay: float = 0.0,
         maxiter: int = 0,
     ) -> float:
+        # Normalize delay so the parameter is ~O(1)
+        delay_scale = max(abs(delay), 1.0 / np.mean(f_data))
+
         def residuals(p, x, y):
-            phasedelay = p
+            phasedelay = p[0] * delay_scale
             z_data_temp = y * np.exp(1j * (2.0 * np.pi * phasedelay * x))
             xc, yc, r0 = self._fit_circle(z_data_temp)
             err = (
@@ -374,13 +394,13 @@ class circlefit(object):
 
         p_final = spopt.leastsq(
             residuals,
-            delay,
+            [delay / delay_scale],
             args=(f_data, z_data),
             maxfev=maxiter,
             ftol=1e-12,
             xtol=1e-12,
         )
-        return p_final[0][0]
+        return p_final[0][0] * delay_scale
 
     def _fit_delay_alt_bigdata(
         self,
@@ -389,12 +409,14 @@ class circlefit(object):
         delay: float = 0.0,
         maxiter: int = 0,
     ) -> float:
+        # Normalize delay so the parameter is ~O(1)
+        delay_scale = max(abs(delay), 1.0 / np.mean(f_data))
+
         def residuals(p, x, y):
-            phasedelay = p
+            phasedelay = p[0] * delay_scale
             z_data_temp = 1j * 2.0 * np.pi * phasedelay * x
             np.exp(z_data_temp, out=z_data_temp)
             np.multiply(y, z_data_temp, out=z_data_temp)
-            # z_data_temp = y*np.exp(1j*(2.*np.pi*phasedelay*x))
             xc, yc, r0 = self._fit_circle(z_data_temp)
             err = (
                 np.sqrt((z_data_temp.real - xc) ** 2 + (z_data_temp.imag - yc) ** 2)
@@ -404,13 +426,13 @@ class circlefit(object):
 
         p_final = spopt.leastsq(
             residuals,
-            delay,
+            [delay / delay_scale],
             args=(f_data, z_data),
             maxfev=maxiter,
             ftol=1e-12,
             xtol=1e-12,
         )
-        return p_final[0][0]
+        return p_final[0][0] * delay_scale
 
     def _fit_entire_model(
         self,
@@ -428,65 +450,74 @@ class circlefit(object):
         """
         fits the whole model: a*exp(i*alpha)*exp(-2*pi*i*f*delay) * [ 1 - {Ql/Qc*exp(i*phi0)} / {1+2*i*Ql*(f-fr)/fr} ]
         """
+        # Normalization scales so all parameters are ~O(1)
+        fr_scale = np.mean(f_data)
+        Qc_scale = max(abs(absQc), 1.0)
+        Ql_scale = max(abs(Ql), 1.0)
+        delay_scale = max(abs(delay), 1.0 / fr_scale)
+        a_scale = max(abs(a), 1e-12)
+        x = np.array(f_data)
+        y = np.array(z_data)
 
-        def funcsqr(p, x):
-            fr, absQc, Ql, phi0, delay, a, alpha = p
-            return np.array(
-                [
-                    np.absolute(
-                        (
-                            a
-                            * np.exp(complex(0, alpha))
-                            * np.exp(complex(0, -2.0 * np.pi * delay * x[i]))
-                            * (
-                                1
-                                - (Ql / absQc * np.exp(complex(0, phi0)))
-                                / (complex(1, 2 * Ql * (x[i] - fr) / fr))
-                            )
-                        )
-                    )
-                    ** 2
-                    for i in range(len(x))
-                ]
+        def _model_vec(p_n, x):
+            fr_n, Qc_n, Ql_n, phi0, delay_n, a_n, alpha = p_n
+            _fr = fr_n * fr_scale
+            _Qc = Qc_n * Qc_scale
+            _Ql = Ql_n * Ql_scale
+            _delay = delay_n * delay_scale
+            _a = a_n * a_scale
+            phase_delay = -2.0 * np.pi * _delay * x
+            detuning = 2.0 * _Ql * (x - _fr) / _fr
+            return (
+                _a
+                * np.exp(1j * alpha)
+                * np.exp(1j * phase_delay)
+                * (1.0 - (_Ql / _Qc * np.exp(1j * phi0)) / (1.0 + 1j * detuning))
             )
 
-        def residuals(p, x, y):
-            fr, absQc, Ql, phi0, delay, a, alpha = p
-            err = [
-                np.absolute(
-                    y[i]
-                    - (
-                        a
-                        * np.exp(complex(0, alpha))
-                        * np.exp(complex(0, -2.0 * np.pi * delay * x[i]))
-                        * (
-                            1
-                            - (Ql / absQc * np.exp(complex(0, phi0)))
-                            / (complex(1, 2 * Ql * (x[i] - fr) / fr))
-                        )
-                    )
-                )
-                for i in range(len(x))
-            ]
-            return err
+        def funcsqr(p_n, x):
+            return np.abs(_model_vec(p_n, x)) ** 2
 
-        p0 = [fr, absQc, Ql, phi0, delay, a, alpha]
+        def residuals(p_n, x, y):
+            return np.abs(y - _model_vec(p_n, x))
+
+        p0_n = [
+            fr / fr_scale,
+            absQc / Qc_scale,
+            Ql / Ql_scale,
+            phi0,
+            delay / delay_scale,
+            a / a_scale,
+            alpha,
+        ]
         result = spopt.leastsq(
             residuals,
-            p0,
-            args=(np.array(f_data), np.array(z_data)),
+            p0_n,
+            args=(x, y),
             full_output=True,
             maxfev=maxiter,
             ftol=1e-12,
             xtol=1e-12,
         )
-        popt, params_cov, infodict, errmsg, ier = result  # type: ignore
-        len_ydata = len(np.array(f_data))
+        popt_n, params_cov, infodict, errmsg, ier = result  # type: ignore
+        # De-normalize optimized parameters
+        popt = np.array(popt_n, dtype=np.float64)
+        popt[0] *= fr_scale
+        popt[1] *= Qc_scale
+        popt[2] *= Ql_scale
+        # popt[3] = phi0 (already ~O(1))
+        popt[4] *= delay_scale
+        popt[5] *= a_scale
+        # popt[6] = alpha (already ~O(1))
+        len_ydata = len(x)
         if (
-            (len_ydata > len(p0)) and params_cov is not None
-        ):  # p_final[1] is cov_x data  #this caculation is from scipy curve_fit routine - no idea if this works correctly...
-            s_sq = (funcsqr(popt, np.array(f_data))).sum() / (len_ydata - len(p0))
+            (len_ydata > len(p0_n)) and params_cov is not None
+        ):
+            # Transform covariance back to original parameter space
+            scale_vec = np.array([fr_scale, Qc_scale, Ql_scale, 1.0, delay_scale, a_scale, 1.0])
+            s_sq = funcsqr(popt_n, x).sum() / (len_ydata - len(p0_n))
             params_cov = params_cov * s_sq
+            params_cov = np.outer(scale_vec, scale_vec) * params_cov
         else:
             params_cov = np.inf
         return popt, params_cov, infodict, errmsg, ier

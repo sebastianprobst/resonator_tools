@@ -5,8 +5,29 @@ import pytest
 from resonator_tools import circuit
 
 TEST_DATA = Path(__file__).parent / "test_data"
-REL_TOL = 1e-2  # 1 %
-REL_TOL_LOOSE = 1e-1  # 10 % – for error estimates sensitive to BLAS backend
+
+# Per-parameter tolerances: well-conditioned quantities get tight bounds,
+# ill-conditioned ones (phases, coupling Qs, derived Qi) get looser bounds.
+TOL_FREQ = 1e-6       # frequency: very well conditioned
+TOL_Q = 5e-4          # loaded / coupling Q values
+TOL_PHASE = 5e-3      # phase angles (theta0)
+TOL_QI = 1e-3         # derived internal Q (error-propagation amplifies)
+TOL_ERR = 5e-2        # error estimates (covariance depends heavily on BLAS)
+TOL_CHI2 = 5e-2       # chi-square
+
+_PARAM_TOL: dict[str, float] = {
+    "fr":         TOL_FREQ,
+    "Ql":         TOL_Q,
+    "Qc":         TOL_Q,
+    "Qi":         TOL_QI,
+    "theta0":     TOL_PHASE,
+    # error estimates
+    "Ql_err":     TOL_ERR,
+    "Qc_err":     TOL_ERR,
+    "fr_err":     TOL_ERR,
+    "chi_square": TOL_CHI2,
+    "Qi_err":     TOL_ERR,
+}
 
 
 @pytest.fixture()
@@ -19,39 +40,41 @@ def fitted_reflection_port():
 
 # Physics parameters – should be stable across platforms
 EXPECTED_FIT = {
-    "Qi": 930112.8190009119,
-    "Qc": 348037.0941443813,
-    "Ql": 253267.4449391589,
-    "fr": 7112934296.265527,
-    "theta0": -0.004289407283891134,
+    "Qi": 930094.6001766999,
+    "Qc": 348030.868112033,
+    "Ql": 253262.7970861197,
+    "fr": 7112934302.445624,
+    "theta0": -0.004599190548892803,
 }
 
 # Error estimates – depend on Jacobian / covariance, more sensitive to BLAS impl
 EXPECTED_FIT_ERRS = {
-    "Ql_err": 198.2631598268342,
-    "Qc_err": 247.70531526252788,
-    "fr_err": 7.299316150758586,
-    "chi_square": 2.917631301044999e-05,
-    "Qi_err": 1748.981727587284,
+    "Ql_err": 204.8556437035391,
+    "Qc_err": 252.03202246432647,
+    "fr_err": 7.632195390242183,
+    "chi_square": 3.068568136623117e-05,
+    "Qi_err": 1787.6795826026673,
 }
 
 
 @pytest.mark.parametrize("key,expected", list(EXPECTED_FIT.items()))
 def test_fitresults(fitted_reflection_port, key, expected):
     actual = fitted_reflection_port.fitresults[key]
-    assert actual == pytest.approx(expected, rel=REL_TOL), (
-        f"{key}: {actual} != {expected}"
+    tol = _PARAM_TOL[key]
+    assert actual == pytest.approx(expected, rel=tol), (
+        f"{key}: {actual} != {expected} (rel_tol={tol})"
     )
 
 
 @pytest.mark.parametrize("key,expected", list(EXPECTED_FIT_ERRS.items()))
 def test_fitresults_errs(fitted_reflection_port, key, expected):
     actual = fitted_reflection_port.fitresults[key]
-    assert actual == pytest.approx(expected, rel=REL_TOL_LOOSE), (
-        f"{key}: {actual} != {expected}"
+    tol = _PARAM_TOL[key]
+    assert actual == pytest.approx(expected, rel=tol), (
+        f"{key}: {actual} != {expected} (rel_tol={tol})"
     )
 
 
 def test_single_photon_limit(fitted_reflection_port):
     spl = fitted_reflection_port.get_single_photon_limit()
-    assert spl == pytest.approx(-155.4405970360725, rel=REL_TOL)
+    assert spl == pytest.approx(-155.44051531902153, rel=TOL_QI)
