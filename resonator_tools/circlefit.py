@@ -1,6 +1,12 @@
 import numpy as np
+import numpy.typing as npt
 import scipy.optimize as spopt
 from scipy import stats
+from typing import Any
+
+
+FloatArray = npt.NDArray[np.float64]
+ComplexArray = npt.NDArray[np.complex128]
 
 
 class circlefit(object):
@@ -10,21 +16,31 @@ class circlefit(object):
     arxiv version: http://arxiv.org/abs/1410.3365
     """
 
-    def _remove_cable_delay(self, f_data, z_data, delay):
+    def _remove_cable_delay(
+        self, f_data: FloatArray, z_data: ComplexArray, delay: float
+    ) -> ComplexArray:
         return z_data / np.exp(2j * np.pi * f_data * delay)
 
-    def _center(self, z_data, zc):
+    def _center(self, z_data: ComplexArray, zc: complex) -> ComplexArray:
         return z_data - zc
 
-    def _dist(self, x):
+    def _dist(self, x: FloatArray) -> FloatArray:
         np.absolute(x, x)
         c = (x > np.pi).astype(int)
         return x + c * (-2.0 * x + 2.0 * np.pi)
 
-    def _periodic_boundary(self, x, bound):
+    def _periodic_boundary(self, x: float, bound: float) -> float:
         return np.fmod(x, bound) - np.trunc(x / bound) * bound
 
-    def _phase_fit_wslope(self, f_data, z_data, theta0, Ql, fr, slope):
+    def _phase_fit_wslope(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        theta0: float,
+        Ql: float,
+        fr: float,
+        slope: float,
+    ) -> npt.NDArray[np.float64]:
         phase = np.angle(z_data)
 
         def residuals(p, x, y):
@@ -38,7 +54,14 @@ class circlefit(object):
         p_final = spopt.leastsq(residuals, p0, args=(np.array(f_data), np.array(phase)))
         return p_final[0]
 
-    def _phase_fit(self, f_data, z_data, theta0, Ql, fr):
+    def _phase_fit(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        theta0: float,
+        Ql: float,
+        fr: float,
+    ) -> npt.NDArray[np.float64]:
         phase = np.angle(z_data)
 
         def residuals_1(p, x, y, Ql):
@@ -90,7 +113,9 @@ class circlefit(object):
         p_final = spopt.leastsq(residuals_5, p0, args=(f_data, phase))
         return p_final[0]
 
-    def _fit_skewed_lorentzian(self, f_data, z_data):
+    def _fit_skewed_lorentzian(
+        self, f_data: FloatArray, z_data: ComplexArray
+    ) -> npt.NDArray[np.float64]:
         amplitude = np.absolute(z_data)
         amplitude_sqr = amplitude**2
         A1a = np.minimum(amplitude_sqr[0], amplitude_sqr[-1])
@@ -142,14 +167,16 @@ class circlefit(object):
             else:
                 self.df_error = np.inf
                 self.dQl_error = np.inf
-        except:
+        except Exception:
             popt = p0
             self.df_error = np.inf
             self.dQl_error = np.inf
         # return p_final[0]
         return popt
 
-    def _fit_circle(self, z_data, refine_results=False):
+    def _fit_circle(
+        self, z_data: ComplexArray, refine_results: bool = False
+    ) -> tuple[float, float, float]:
         def calc_moments(z_data):
             xi = z_data.real
             xi_sqr = xi * xi
@@ -290,14 +317,20 @@ class circlefit(object):
             print("iterative r0: " + str(r0))
         return xc, yc, r0
 
-    def _guess_delay(self, f_data, z_data):
+    def _guess_delay(self, f_data: FloatArray, z_data: ComplexArray) -> float:
         phase2 = np.unwrap(np.angle(z_data))
         gradient, intercept, r_value, p_value, std_err = stats.linregress(
             f_data, phase2
         )
         return gradient * (-1.0) / (np.pi * 2.0)
 
-    def _fit_delay(self, f_data, z_data, delay=0.0, maxiter=0):
+    def _fit_delay(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        delay: float = 0.0,
+        maxiter: int = 0,
+    ) -> float:
         def residuals(p, x, y):
             phasedelay = p
             z_data_temp = y * np.exp(1j * (2.0 * np.pi * phasedelay * x))
@@ -318,7 +351,13 @@ class circlefit(object):
         )
         return p_final[0][0]
 
-    def _fit_delay_alt_bigdata(self, f_data, z_data, delay=0.0, maxiter=0):
+    def _fit_delay_alt_bigdata(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        delay: float = 0.0,
+        maxiter: int = 0,
+    ) -> float:
         def residuals(p, x, y):
             phasedelay = p
             z_data_temp = 1j * 2.0 * np.pi * phasedelay * x
@@ -343,8 +382,18 @@ class circlefit(object):
         return p_final[0][0]
 
     def _fit_entire_model(
-        self, f_data, z_data, fr, absQc, Ql, phi0, delay, a=1.0, alpha=0.0, maxiter=0
-    ):
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        fr: float,
+        absQc: float,
+        Ql: float,
+        phi0: float,
+        delay: float,
+        a: float = 1.0,
+        alpha: float = 0.0,
+        maxiter: int = 0,
+    ) -> tuple[Any, Any, Any, str, int]:
         """
         fits the whole model: a*exp(i*alpha)*exp(-2*pi*i*f*delay) * [ 1 - {Ql/Qc*exp(i*phi0)} / {1+2*i*Ql*(f-fr)/fr} ]
         """
@@ -410,7 +459,14 @@ class circlefit(object):
 
     #
 
-    def _optimizedelay(self, f_data, z_data, Ql, fr, maxiter=4):
+    def _optimizedelay(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        Ql: float,
+        fr: float,
+        maxiter: int = 4,
+    ) -> float:
         xc, yc, r0 = self._fit_circle(z_data)
         z_data = self._center(z_data, complex(xc, yc))
         theta, Ql, fr, slope = self._phase_fit_wslope(f_data, z_data, 0.0, Ql, fr, 0.0)
@@ -426,7 +482,9 @@ class circlefit(object):
         delay = delay - slope / (2.0 * 2.0 * np.pi)  # start final interation
         return delay
 
-    def _fit_circle_iter(self, z_data, xc, yc, rc):
+    def _fit_circle_iter(
+        self, z_data: ComplexArray, xc: float, yc: float, rc: float
+    ) -> tuple[float, float, float]:
         """
         this is the radial weighting procedure
         it improves your fitting value for the radius = Ql/Qc
@@ -452,7 +510,9 @@ class circlefit(object):
         xc, yc, rc = p_final[0]
         return xc, yc, rc
 
-    def _fit_circle_iter_radialweight(self, z_data, xc, yc, rc):
+    def _fit_circle_iter_radialweight(
+        self, z_data: ComplexArray, xc: float, yc: float, rc: float
+    ) -> float:
         """
         this is the radial weighting procedure
         it improves your fitting value for the radius = Ql/Qc
@@ -471,7 +531,7 @@ class circlefit(object):
         def weight(x, y):
             try:
                 res = 1.0 / np.sqrt((xc - x) ** 2 + (yc - y) ** 2)
-            except:
+            except Exception:
                 res = 1.0
             return res
 
@@ -484,7 +544,9 @@ class circlefit(object):
         p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat))
         return p_final[0][0]
 
-    def _get_errors(self, residual, xdata, ydata, fitparams):
+    def _get_errors(
+        self, residual: Any, xdata: Any, ydata: Any, fitparams: Any
+    ) -> tuple[float, Any]:
         """
         wrapper for get_cov, only gives the errors and chisquare
         """
@@ -495,7 +557,7 @@ class circlefit(object):
             errors = None
         return chisqr, errors
 
-    def _residuals_notch_full(self, p, x, y):
+    def _residuals_notch_full(self, p: Any, x: Any, y: Any) -> Any:
         fr, absQc, Ql, phi0, delay, a, alpha = p
         err = np.absolute(
             y
@@ -512,7 +574,7 @@ class circlefit(object):
         )
         return err
 
-    def _residuals_notch_ideal(self, p, x, y):
+    def _residuals_notch_ideal(self, p: Any, x: Any, y: Any) -> Any:
         fr, absQc, Ql, phi0 = p
         # if fr == 0: print(p)
         err = np.absolute(
@@ -530,7 +592,7 @@ class circlefit(object):
         # print("fr: " +str(fr))
         return err
 
-    def _residuals_notch_ideal_complex(self, p, x, y):
+    def _residuals_notch_ideal_complex(self, p: Any, x: Any, y: Any) -> Any:
         fr, absQc, Ql, phi0 = p
         # if fr == 0: print(p)
         err = y - (
@@ -545,7 +607,7 @@ class circlefit(object):
         # print("fr: " +str(fr))
         return err
 
-    def _residuals_directrefl(self, p, x, y):
+    def _residuals_directrefl(self, p: Any, x: Any, y: Any) -> Any:
         fr, Qc, Ql = p
         # if fr == 0: print(p)
         err = y - (2.0 * Ql / Qc - 1.0 + 2j * Ql * (fr - x) / fr) / (
@@ -558,14 +620,14 @@ class circlefit(object):
         # print("fr: " +str(fr))
         return err
 
-    def _residuals_transm_ideal(self, p, x, y):
+    def _residuals_transm_ideal(self, p: Any, x: Any, y: Any) -> Any:
         fr, Ql = p
         err = np.absolute(y - (1.0 / (complex(1, 2 * Ql * (x - fr) / float(fr)))))
         return err
 
     def _get_cov_fast_notch(
-        self, xdata, ydata, fitparams
-    ):  # enhanced by analytical derivatives
+        self, xdata: Any, ydata: Any, fitparams: Any
+    ) -> tuple[float, Any]:  # enhanced by analytical derivatives
         # derivatives of notch_ideal model with respect to parameters
         def dS21_dQl(p, f):
             fr, absQc, Ql, phi0 = p
@@ -612,13 +674,13 @@ class circlefit(object):
         chisqr = 1.0 / float(len(xdata) - len(fitparams)) * (chi**2).sum()
         try:
             cov = np.linalg.inv(A) * chisqr
-        except:
+        except Exception:
             cov = None
         return chisqr, cov
 
     def _get_cov_fast_directrefl(
-        self, xdata, ydata, fitparams
-    ):  # enhanced by analytical derivatives
+        self, xdata: Any, ydata: Any, fitparams: Any
+    ) -> tuple[float, Any]:  # enhanced by analytical derivatives
         # derivatives of notch_ideal model with respect to parameters
         def dS21_dQl(p, f):
             fr, Qc, Ql = p
@@ -651,6 +713,6 @@ class circlefit(object):
         chisqr = 1.0 / float(len(xdata) - len(fitparams)) * (chi**2).sum()
         try:
             cov = np.linalg.inv(A) * chisqr
-        except:
+        except Exception:
             cov = None
         return chisqr, cov

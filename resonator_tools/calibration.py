@@ -1,6 +1,12 @@
 import numpy as np
+import numpy.typing as npt
 from scipy import sparse
 from scipy.interpolate import interp1d
+from typing import Any, Callable
+
+
+FloatArray = npt.NDArray[np.float64]
+ComplexArray = npt.NDArray[np.complex128]
 
 
 class calibration(object):
@@ -8,19 +14,36 @@ class calibration(object):
     some useful tools for manual calibration
     """
 
-    def normalize_zdata(self, z_data, cal_z_data):
+    def normalize_zdata(
+        self, z_data: ComplexArray, cal_z_data: ComplexArray
+    ) -> ComplexArray:
         return z_data / cal_z_data
 
-    def normalize_amplitude(self, z_data, cal_ampdata):
+    def normalize_amplitude(
+        self, z_data: ComplexArray, cal_ampdata: FloatArray
+    ) -> ComplexArray:
         return z_data / cal_ampdata
 
-    def normalize_phase(self, z_data, cal_phase):
+    def normalize_phase(
+        self, z_data: ComplexArray, cal_phase: FloatArray
+    ) -> ComplexArray:
         return z_data * np.exp(-1j * cal_phase)
 
-    def normalize_by_func(self, f_data, z_data, func):
+    def normalize_by_func(
+        self,
+        f_data: FloatArray,
+        z_data: ComplexArray,
+        func: Callable[[FloatArray], ComplexArray],
+    ) -> ComplexArray:
         return z_data / func(f_data)
 
-    def _baseline_als(self, y, lam, p, niter=10):
+    def _baseline_als(
+        self,
+        y: FloatArray,
+        lam: float,
+        p: float,
+        niter: int = 10,
+    ) -> FloatArray:
         """
         see http://zanran_storage.s3.amazonaws.com/www.science.uva.nl/ContentPages/443199618.pdf
         "Asymmetric Least Squares Smoothing" by P. Eilers and H. Boelens in 2005.
@@ -32,21 +55,35 @@ class calibration(object):
         L = len(y)
         D = sparse.csc_matrix(np.diff(np.eye(L), 2))
         w = np.ones(L)
-        for i in range(niter):
+        z = y.copy()
+        for _ in range(niter):
             W = sparse.spdiags(w, 0, L, L)
             Z = W + lam * D.dot(D.transpose())
             z = sparse.linalg.spsolve(Z, w * y)
             w = p * (y > z) + (1 - p) * (y < z)
         return z
 
-    def fit_baseline_amp(self, z_data, lam, p, niter=10):
+    def fit_baseline_amp(
+        self,
+        z_data: ComplexArray,
+        lam: float,
+        p: float,
+        niter: int = 10,
+    ) -> FloatArray:
         """
         for this to work, you need to analyze a large part of the baseline
         tune lam and p until you get the desired result
         """
         return self._baseline_als(np.absolute(z_data), lam, p, niter=niter)
 
-    def baseline_func_amp(self, z_data, f_data, lam, p, niter=10):
+    def baseline_func_amp(
+        self,
+        z_data: ComplexArray,
+        f_data: FloatArray,
+        lam: float,
+        p: float,
+        niter: int = 10,
+    ) -> Any:
         """
         for this to work, you need to analyze a large part of the baseline
         tune lam and p until you get the desired result
@@ -59,7 +96,14 @@ class calibration(object):
             kind="cubic",
         )
 
-    def baseline_func_phase(self, z_data, f_data, lam, p, niter=10):
+    def baseline_func_phase(
+        self,
+        z_data: ComplexArray,
+        f_data: FloatArray,
+        lam: float,
+        p: float,
+        niter: int = 10,
+    ) -> Any:
         """
         for this to work, you need to analyze a large part of the baseline
         tune lam and p until you get the desired result
@@ -72,14 +116,20 @@ class calibration(object):
             kind="cubic",
         )
 
-    def fit_baseline_phase(self, z_data, lam, p, niter=10):
+    def fit_baseline_phase(
+        self,
+        z_data: ComplexArray,
+        lam: float,
+        p: float,
+        niter: int = 10,
+    ) -> FloatArray:
         """
         for this to work, you need to analyze a large part of the baseline
         tune lam and p until you get the desired result
         """
         return self._baseline_als(np.angle(z_data), lam, p, niter=niter)
 
-    def GUIbaselinefit(self):
+    def GUIbaselinefit(self) -> None:
         """
         A GUI to help you fit the baseline
         """
@@ -101,9 +151,9 @@ class calibration(object):
         ax0.set_ylabel("amp, rawdata vs. baseline")
         ax1.set_ylabel("amp, corrected")
         axcolor = "lightgoldenrodyellow"
-        axSmooth = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
-        axAsym = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
-        axbcorr = plt.axes([0.25, 0.05, 0.65, 0.03], facecolor=axcolor)
+        axSmooth = plt.axes((0.25, 0.1, 0.65, 0.03), facecolor=axcolor)
+        axAsym = plt.axes((0.25, 0.15, 0.65, 0.03), facecolor=axcolor)
+        axbcorr = plt.axes((0.25, 0.05, 0.65, 0.03), facecolor=axcolor)
         sSmooth = Slider(
             axSmooth,
             "Smoothness",

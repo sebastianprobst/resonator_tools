@@ -2,13 +2,26 @@
 ## Functions to evaluate noise data
 ######
 
-import warnings
 import numpy as np
+import numpy.typing as npt
 from scipy.signal import periodogram
+from typing import Any
+
+
+ComplexArray = npt.NDArray[np.complex128]
 
 
 class noisedata(object):
-    def __init__(self, IQ, IQref, fr, Ql, fs, gain_corr=[1.0, 1.0], Z=50):
+    def __init__(
+        self,
+        IQ: ComplexArray,
+        IQref: ComplexArray,
+        fr: float,
+        Ql: float,
+        fs: float,
+        gain_corr: list[float] = [1.0, 1.0],
+        Z: float = 50,
+    ) -> None:
         """
         units are assumed to be in volts
         -> IQ = I+1j*Q ; with amplitude signal on Q and phase on I
@@ -39,7 +52,7 @@ class noisedata(object):
 
     #################################
     # functions to evalate multiple things
-    def P_I_eval_all(self):
+    def P_I_eval_all(self) -> tuple[npt.NDArray[Any], list[str]]:
         """
         returns a 2D numpy array with all the results
         and a 1D list with the description
@@ -57,7 +70,7 @@ class noisedata(object):
             )
         ), comment
 
-    def P_Iref_eval_all(self):
+    def P_Iref_eval_all(self) -> tuple[npt.NDArray[Any], list[str]]:
         """
         returns a 2D numpy array with all the results
         and a 1D list with the description
@@ -83,7 +96,7 @@ class noisedata(object):
             )
         ), comment
 
-    def P_Q_eval_all(self):
+    def P_Q_eval_all(self) -> tuple[npt.NDArray[Any], list[str]]:
         """
         returns a 2D numpy array with all the results
         and a 1D list with the description
@@ -91,7 +104,7 @@ class noisedata(object):
         comment = ["P_Q", "P_Qnorm", "P_Qpower"]
         return np.vstack((self.P_Q, self.P_Qnorm(), self.P_Qpower())), comment
 
-    def P_Qref_eval_all(self):
+    def P_Qref_eval_all(self) -> tuple[npt.NDArray[Any], list[str]]:
         """
         returns a 2D numpy array with all the results
         and a 1D list with the description
@@ -101,7 +114,7 @@ class noisedata(object):
 
     #################################
     # helpers
-    def _demean(self, x):
+    def _demean(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
         removes the mean value from x
         """
@@ -110,19 +123,19 @@ class noisedata(object):
     #################################
     # noise on I
 
-    def P_Inorm(self):
+    def P_Inorm(self) -> Any:
         """
         V^2/Hz
         """
         return self.P_I / (self.offrespoint**2)
 
-    def P_Ipower(self):
+    def P_Ipower(self) -> Any:
         """
         W/Hz
         """
         return self.P_I / self.Z
 
-    def P_dtheta(self):
+    def P_dtheta(self) -> Any:
         """
         rad^2/Hz
         phase noise on the resonator circle phase
@@ -130,21 +143,21 @@ class noisedata(object):
         """
         return self.P_Inorm() / self.r**2
 
-    def P_dphi(self):
+    def P_dphi(self) -> Any:
         """
         rad^2/Hz
         phase noise on the phase measured with the VNA
         """
         return self.P_Inorm() / np.absolute(self.respoint**2)
 
-    def P_df(self):
+    def P_df(self) -> Any:
         """
         Hz^2/Hz
         frequency noise
         """
         return self.P_theta() * self.fr**2 / (16.0 * self.Ql**2)
 
-    def P_(self):
+    def P_(self) -> Any:
         """
         1/Hz
         fractional frequency noise
@@ -154,19 +167,19 @@ class noisedata(object):
     #################################
     # noise on Iref
 
-    def P_Irefnorm(self):
+    def P_Irefnorm(self) -> Any:
         """
         V^2/Hz
         """
         return self.P_Iref / (self.offrespoint**2)
 
-    def P_Irefpower(self):
+    def P_Irefpower(self) -> Any:
         """
         W/Hz
         """
         return self.P_Iref / self.Z
 
-    def P_refdtheta(self):
+    def P_refdtheta(self) -> Any:
         """
         rad^2/Hz
         phase noise on the resonator circle phase
@@ -174,21 +187,21 @@ class noisedata(object):
         """
         return self.P_Irefnorm() / self.r**2
 
-    def P_refdphi(self):
+    def P_refdphi(self) -> Any:
         """
         rad^2/Hz
         phase noise on the phase measured with the VNA
         """
         return self.P_Irefnorm() / np.absolute(self.respoint**2)
 
-    def P_refdf(self):
+    def P_refdf(self) -> Any:
         """
         Hz^2/Hz
         frequency noise
         """
         return self.P_reftheta() * self.fr**2 / (16.0 * self.Ql**2)
 
-    def P_ref(self):
+    def P_ref(self) -> Any:
         """
         1/Hz
         fractional frequency noise
@@ -198,13 +211,13 @@ class noisedata(object):
     #################################
     # noise on Q
 
-    def P_Qnorm(self):
+    def P_Qnorm(self) -> Any:
         """
         V^2/Hz
         """
         return self.P_Q / (self.offrespoint**2)
 
-    def P_Qpower(self):
+    def P_Qpower(self) -> Any:
         """
         W/Hz
         """
@@ -213,13 +226,13 @@ class noisedata(object):
     #################################
     # noise on Qref
 
-    def P_Qrefnorm(self):
+    def P_Qrefnorm(self) -> Any:
         """
         V^2/Hz
         """
         return self.P_Qref / (self.offrespoint**2)
 
-    def P_Qrefpower(self):
+    def P_Qrefpower(self) -> Any:
         """
         W/Hz
         """

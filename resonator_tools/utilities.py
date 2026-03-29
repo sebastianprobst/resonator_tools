@@ -1,16 +1,21 @@
 import warnings
 import numpy as np
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 
 
-def Watt2dBm(x):
+FloatArray = npt.NDArray[np.float64]
+ComplexArray = npt.NDArray[np.complex128]
+
+
+def Watt2dBm(x: float | FloatArray) -> float | FloatArray:
     """
     converts from units of watts to dBm
     """
     return 10.0 * np.log10(x * 1000.0)
 
 
-def dBm2Watt(x):
+def dBm2Watt(x: float | FloatArray) -> float | FloatArray:
     """
     converts from units of watts to dBm
     """
@@ -22,7 +27,7 @@ class plotting(object):
     some helper functions for plotting
     """
 
-    def plotall(self):
+    def plotall(self) -> None:
         real = self.z_data_raw.real
         imag = self.z_data_raw.imag
         real2 = self.z_data_sim.real
@@ -47,7 +52,7 @@ class plotting(object):
         plt.legend()
         plt.show()
 
-    def plotcalibrateddata(self):
+    def plotcalibrateddata(self) -> None:
         real = self.z_data.real
         imag = self.z_data.imag
         plt.subplot(221)
@@ -67,7 +72,7 @@ class plotting(object):
         plt.legend()
         plt.show()
 
-    def plotrawdata(self):
+    def plotrawdata(self) -> None:
         real = self.z_data_raw.real
         imag = self.z_data_raw.imag
         plt.subplot(221)
@@ -93,7 +98,12 @@ class save_load(object):
     procedures for loading and saving data used by other classes
     """
 
-    def _ConvToCompl(self, x, y, dtype):
+    def _ConvToCompl(
+        self,
+        x: FloatArray,
+        y: FloatArray,
+        dtype: str,
+    ) -> ComplexArray | None:
         """
         dtype = 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg', 'linmagphasedeg'
         """
@@ -113,12 +123,12 @@ class save_load(object):
                 SyntaxWarning,
             )
 
-    def add_data(self, f_data, z_data):
+    def add_data(self, f_data: FloatArray, z_data: ComplexArray) -> None:
         self.f_data = np.array(f_data)
         self.z_data_raw = np.array(z_data)
 
-    def cut_data(self, f1, f2):
-        def findpos(f_data, val):
+    def cut_data(self, f1: float, f2: float) -> None:
+        def findpos(f_data: FloatArray, val: float) -> int:
             pos = 0
             for i in range(len(f_data)):
                 if f_data[i] < val:
@@ -132,13 +142,13 @@ class save_load(object):
 
     def add_fromtxt(
         self,
-        fname,
-        dtype,
-        header_rows,
-        usecols=(0, 1, 2),
-        fdata_unit=1.0,
-        delimiter=None,
-    ):
+        fname: str,
+        dtype: str,
+        header_rows: int,
+        usecols: tuple[int, int, int] = (0, 1, 2),
+        fdata_unit: float = 1.0,
+        delimiter: str | None = None,
+    ) -> None:
         """
         dtype = 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg', 'linmagphasedeg'
         """
@@ -148,10 +158,18 @@ class save_load(object):
         self.f_data = data[:, 0] * fdata_unit
         self.z_data_raw = self._ConvToCompl(data[:, 1], data[:, 2], dtype=dtype)
 
-    def add_fromhdf():
+    def add_fromhdf(self) -> None:
         pass
 
-    def add_froms2p(self, fname, y1_col, y2_col, dtype, fdata_unit=1.0, delimiter=None):
+    def add_froms2p(
+        self,
+        fname: str,
+        y1_col: int,
+        y2_col: int,
+        dtype: str,
+        fdata_unit: float = 1.0,
+        delimiter: str | None = None,
+    ) -> None:
         """
         dtype = 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg', 'linmagphasedeg'
         """
@@ -215,5 +233,5 @@ class save_load(object):
         self.f_data = np.array(f_data)
         self.z_data_raw = np.array(z_data_raw)
 
-    def save_fitresults(self, fname):
+    def save_fitresults(self, fname: str) -> None:
         pass
