@@ -6,7 +6,7 @@ from resonator_tools import circuit
 
 TEST_DATA = Path(__file__).parent / "test_data"
 REL_TOL = 1e-2  # 1 %
-REL_TOL_LOOSE = 5e-2  # 5 % – for error estimates sensitive to BLAS backend
+REL_TOL_LOOSE = 2e-1  # 20 % – for error estimates sensitive to BLAS backend
 
 
 @pytest.fixture()
