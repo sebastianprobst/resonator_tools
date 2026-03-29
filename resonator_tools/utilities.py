@@ -27,11 +27,13 @@ class plotting(object):
     some helper functions for plotting
     """
 
+    # TODO: refactor architecture using composition instead of inheritance, so that plotting is a separate class that can be used by any port type without needing to inherit from it
     def plotall(self) -> None:
-        real = self.z_data_raw.real
-        imag = self.z_data_raw.imag
-        real2 = self.z_data_sim.real
-        imag2 = self.z_data_sim.imag
+        # FIXME: variable assignments depend on the presence of raw and sim data via inheritance, which may not always be the case. This should be refactored to be more robust and flexible.
+        real = self.z_data_raw.real  # type: ignore
+        imag = self.z_data_raw.imag  # type: ignore
+        real2 = self.z_data_sim.real  # type: ignore
+        imag2 = self.z_data_sim.imag  # type: ignore
         plt.subplot(221)
         plt.plot(real, imag, label="rawdata")
         plt.plot(real2, imag2, label="fit")
@@ -39,54 +41,54 @@ class plotting(object):
         plt.ylabel("Im(S21)")
         plt.legend()
         plt.subplot(222)
-        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_raw), label="rawdata")
-        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_sim), label="fit")
+        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_raw), label="rawdata")  # type: ignore
+        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_sim), label="fit")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("|S21|")
         plt.legend()
         plt.subplot(223)
-        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_raw), label="rawdata")
-        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_sim), label="fit")
+        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_raw), label="rawdata")  # type: ignore
+        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_sim), label="fit")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("arg(|S21|)")
         plt.legend()
         plt.show()
 
     def plotcalibrateddata(self) -> None:
-        real = self.z_data.real
-        imag = self.z_data.imag
+        real = self.z_data.real  # type: ignore
+        imag = self.z_data.imag  # type: ignore
         plt.subplot(221)
         plt.plot(real, imag, label="rawdata")
         plt.xlabel("Re(S21)")
         plt.ylabel("Im(S21)")
         plt.legend()
         plt.subplot(222)
-        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data), label="rawdata")
+        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data), label="rawdata")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("|S21|")
         plt.legend()
         plt.subplot(223)
-        plt.plot(self.f_data * 1e-9, np.angle(self.z_data), label="rawdata")
+        plt.plot(self.f_data * 1e-9, np.angle(self.z_data), label="rawdata")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("arg(|S21|)")
         plt.legend()
         plt.show()
 
     def plotrawdata(self) -> None:
-        real = self.z_data_raw.real
-        imag = self.z_data_raw.imag
+        real = self.z_data_raw.real  # type: ignore
+        imag = self.z_data_raw.imag  # type: ignore
         plt.subplot(221)
         plt.plot(real, imag, label="rawdata")
         plt.xlabel("Re(S21)")
         plt.ylabel("Im(S21)")
         plt.legend()
         plt.subplot(222)
-        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_raw), label="rawdata")
+        plt.plot(self.f_data * 1e-9, np.absolute(self.z_data_raw), label="rawdata")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("|S21|")
         plt.legend()
         plt.subplot(223)
-        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_raw), label="rawdata")
+        plt.plot(self.f_data * 1e-9, np.angle(self.z_data_raw), label="rawdata")  # type: ignore
         plt.xlabel("f (GHz)")
         plt.ylabel("arg(|S21|)")
         plt.legend()
@@ -110,13 +112,15 @@ class save_load(object):
         if dtype == "realimag":
             return x + 1j * y
         elif dtype == "linmagphaserad":
-            return x * np.exp(1j * y)
+            return (x * np.exp(1j * y)).astype(np.complex128)
         elif dtype == "dBmagphaserad":
-            return 10 ** (x / 20.0) * np.exp(1j * y)
+            return (10 ** (x / 20.0) * np.exp(1j * y)).astype(np.complex128)
         elif dtype == "linmagphasedeg":
-            return x * np.exp(1j * y / 180.0 * np.pi)
+            return (x * np.exp(1j * y / 180.0 * np.pi)).astype(np.complex128)
         elif dtype == "dBmagphasedeg":
-            return 10 ** (x / 20.0) * np.exp(1j * y / 180.0 * np.pi)
+            return (10 ** (x / 20.0) * np.exp(1j * y / 180.0 * np.pi)).astype(
+                np.complex128
+            )
         else:
             warnings.warn(
                 "Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'.",
@@ -138,7 +142,7 @@ class save_load(object):
         pos1 = findpos(self.f_data, f1)
         pos2 = findpos(self.f_data, f2)
         self.f_data = self.f_data[pos1:pos2]
-        self.z_data_raw = self.z_data_raw[pos1:pos2]
+        self.z_data_raw = self.z_data_raw[pos1:pos2]  # type: ignore
 
     def add_fromtxt(
         self,

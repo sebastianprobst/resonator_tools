@@ -137,14 +137,14 @@ class circlefit(object):
         )
         A2a, A4a, Qla = p_final[0]
 
-        def residuals2(p, x, y):
-            A1, A2, A3, A4, fr, Ql = p
-            err = y - (
-                A1
-                + A2 * (x - fr)
-                + (A3 + A4 * (x - fr)) / (1.0 + 4.0 * Ql**2 * ((x - fr) / fr) ** 2)
-            )
-            return err
+        # def residuals2(p, x, y):
+        #     A1, A2, A3, A4, fr, Ql = p
+        #     err = y - (
+        #         A1
+        #         + A2 * (x - fr)
+        #         + (A3 + A4 * (x - fr)) / (1.0 + 4.0 * Ql**2 * ((x - fr) / fr) ** 2)
+        #     )
+        #     return err
 
         def fitfunc(x, A1, A2, A3, A4, fr, Ql):
             return (
@@ -172,7 +172,7 @@ class circlefit(object):
             self.df_error = np.inf
             self.dQl_error = np.inf
         # return p_final[0]
-        return popt
+        return popt  # type: ignore
 
     def _fit_circle(
         self, z_data: ComplexArray, refine_results: bool = False
@@ -319,9 +319,8 @@ class circlefit(object):
 
     def _guess_delay(self, f_data: FloatArray, z_data: ComplexArray) -> float:
         phase2 = np.unwrap(np.angle(z_data))
-        gradient, intercept, r_value, p_value, std_err = stats.linregress(
-            f_data, phase2
-        )
+        gradient = stats.linregress(f_data, phase2)[0]
+        gradient = float(gradient)  # type: ignore
         return gradient * (-1.0) / (np.pi * 2.0)
 
     def _fit_delay(
@@ -440,13 +439,14 @@ class circlefit(object):
             return err
 
         p0 = [fr, absQc, Ql, phi0, delay, a, alpha]
-        (popt, params_cov, infodict, errmsg, ier) = spopt.leastsq(
+        result = spopt.leastsq(
             residuals,
             p0,
             args=(np.array(f_data), np.array(z_data)),
             full_output=True,
             maxfev=maxiter,
         )
+        popt, params_cov, infodict, errmsg, ier = result  # type: ignore
         len_ydata = len(np.array(f_data))
         if (
             (len_ydata > len(p0)) and params_cov is not None
@@ -544,18 +544,18 @@ class circlefit(object):
         p_final = spopt.leastsq(residuals, p0, args=(xdat, ydat))
         return p_final[0][0]
 
-    def _get_errors(
-        self, residual: Any, xdata: Any, ydata: Any, fitparams: Any
-    ) -> tuple[float, Any]:
-        """
-        wrapper for get_cov, only gives the errors and chisquare
-        """
-        chisqr, cov = self._get_cov(residual, xdata, ydata, fitparams)
-        if cov is not None:
-            errors = np.sqrt(np.diagonal(cov))
-        else:
-            errors = None
-        return chisqr, errors
+    # def _get_errors(
+    #     self, residual: Any, xdata: Any, ydata: Any, fitparams: Any
+    # ) -> tuple[float, Any]:
+    #     """
+    #     wrapper for get_cov, only gives the errors and chisquare
+    #     """
+    #     chisqr, cov = self._get_cov(residual, xdata, ydata, fitparams)
+    #     if cov is not None:
+    #         errors = np.sqrt(np.diagonal(cov))
+    #     else:
+    #         errors = None
+    #     return chisqr, errors
 
     def _residuals_notch_full(self, p: Any, x: Any, y: Any) -> Any:
         fr, absQc, Ql, phi0, delay, a, alpha = p
