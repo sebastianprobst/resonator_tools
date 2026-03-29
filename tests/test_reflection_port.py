@@ -8,25 +8,25 @@ TEST_DATA = Path(__file__).parent / "test_data"
 
 # Per-parameter tolerances: well-conditioned quantities get tight bounds,
 # ill-conditioned ones (phases, coupling Qs, derived Qi) get looser bounds.
-TOL_FREQ = 1e-6       # frequency: very well conditioned
-TOL_Q = 1e-2          # loaded / coupling Q values
-TOL_PHASE = 1e-2      # phase angles (theta0)
-TOL_QI = 1e-2         # derived internal Q (error-propagation amplifies)
-TOL_ERR = 0.25        # error estimates (covariance depends heavily on BLAS)
-TOL_CHI2 = 0.25       # chi-square
+TOL_FREQ = 1e-6  # frequency: very well conditioned
+TOL_Q = 1e-2  # loaded / coupling Q values
+TOL_PHASE = 1e-2  # phase angles (theta0)
+TOL_QI = 1e-2  # derived internal Q (error-propagation amplifies)
+TOL_ERR = 0.25  # error estimates (covariance depends heavily on BLAS)
+TOL_CHI2 = 0.25  # chi-square
 
 _PARAM_TOL: dict[str, float] = {
-    "fr":         TOL_FREQ,
-    "Ql":         TOL_Q,
-    "Qc":         TOL_Q,
-    "Qi":         TOL_QI,
-    "theta0":     TOL_PHASE,
+    "fr": TOL_FREQ,
+    "Ql": TOL_Q,
+    "Qc": TOL_Q,
+    "Qi": TOL_QI,
+    "theta0": TOL_PHASE,
     # error estimates
-    "Ql_err":     TOL_ERR,
-    "Qc_err":     TOL_ERR,
-    "fr_err":     TOL_ERR,
+    "Ql_err": TOL_ERR,
+    "Qc_err": TOL_ERR,
+    "fr_err": TOL_ERR,
     "chi_square": TOL_CHI2,
-    "Qi_err":     TOL_ERR,
+    "Qi_err": TOL_ERR,
 }
 
 

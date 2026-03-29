@@ -58,3 +58,5 @@ target/
 
 .venv/
 .ruff_cache/
+uv.lock
+.python-version

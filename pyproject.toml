@@ -33,6 +33,7 @@ Issues = "https://github.com/sebastianprobst/resonator_tools/issues"
 [dependency-groups]
 dev = [
     "nbformat>=5.10.4",
+    "pre-commit>=4.2",
     "pytest>=9.0.2",
     "ruff>=0.15.8",
 ]

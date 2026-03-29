@@ -55,7 +55,12 @@ class circlefit(object):
             _fr = fr_n * fr_scale
             _slope = slope_n * slope_scale
             err = self._dist(
-                y - (_theta0 + 2.0 * np.arctan(2.0 * _Ql * (1.0 - x_n * fr_scale / _fr)) - _slope * x_n * fr_scale)
+                y
+                - (
+                    _theta0
+                    + 2.0 * np.arctan(2.0 * _Ql * (1.0 - x_n * fr_scale / _fr))
+                    - _slope * x_n * fr_scale
+                )
             )
             return err
 
@@ -68,7 +73,9 @@ class circlefit(object):
             xtol=1e-12,
         )
         theta0_f, Ql_f, fr_f, slope_f = p_final[0]
-        return np.array([theta0_f, Ql_f * Ql_scale, fr_f * fr_scale, slope_f * slope_scale])
+        return np.array(
+            [theta0_f, Ql_f * Ql_scale, fr_f * fr_scale, slope_f * slope_scale]
+        )
 
     def _phase_fit(
         self,
@@ -197,7 +204,8 @@ class circlefit(object):
             err = y - (
                 A1a
                 + A2_n * fr_scale * (x_n - fra_n)
-                + (A3a + A4_n * fr_scale * (x_n - fra_n)) / (1.0 + 4.0 * Ql**2 * ((x_n - fra_n) / fra_n) ** 2)
+                + (A3a + A4_n * fr_scale * (x_n - fra_n))
+                / (1.0 + 4.0 * Ql**2 * ((x_n - fra_n) / fra_n) ** 2)
             )
             return err
 
@@ -217,13 +225,17 @@ class circlefit(object):
             return (
                 A1
                 + A2_n * fr_scale * (x_n - fr_n)
-                + (A3 + A4_n * fr_scale * (x_n - fr_n)) / (1.0 + 4.0 * Ql**2 * ((x_n - fr_n) / fr_n) ** 2)
+                + (A3 + A4_n * fr_scale * (x_n - fr_n))
+                / (1.0 + 4.0 * Ql**2 * ((x_n - fr_n) / fr_n) ** 2)
             )
 
         p0 = [A1a, A2a, A3a, A4a, fra_n, Qla]
         try:
             popt, pcov = spopt.curve_fit(
-                fitfunc, f_norm, amp_sqr, p0=p0,
+                fitfunc,
+                f_norm,
+                amp_sqr,
+                p0=p0,
                 bounds=(
                     [-np.inf, -np.inf, -np.inf, -np.inf, f_norm[0], 0],
                     [np.inf, np.inf, np.inf, np.inf, f_norm[-1], np.inf],
@@ -530,11 +542,11 @@ class circlefit(object):
         popt[5] *= a_scale
         # popt[6] = alpha (already ~O(1))
         len_ydata = len(x)
-        if (
-            (len_ydata > len(p0_n)) and params_cov is not None
-        ):
+        if (len_ydata > len(p0_n)) and params_cov is not None:
             # Transform covariance back to original parameter space
-            scale_vec = np.array([fr_scale, Qc_scale, Ql_scale, 1.0, delay_scale, a_scale, 1.0])
+            scale_vec = np.array(
+                [fr_scale, Qc_scale, Ql_scale, 1.0, delay_scale, a_scale, 1.0]
+            )
             s_sq = funcsqr(popt_n, x).sum() / (len_ydata - len(p0_n))
             params_cov = params_cov * s_sq
             params_cov = np.outer(scale_vec, scale_vec) * params_cov
