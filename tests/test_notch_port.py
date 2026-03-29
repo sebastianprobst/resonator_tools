@@ -70,7 +70,5 @@ def test_single_photon_limit(fitted_notch_port):
 
 
 def test_photons_in_resonator(fitted_notch_port):
-    photons = fitted_notch_port.get_photons_in_resonator(
-        -140, unit="dBm", diacorr=True
-    )
+    photons = fitted_notch_port.get_photons_in_resonator(-140, unit="dBm", diacorr=True)
     assert photons == pytest.approx(7.952051844679814, rel=REL_TOL)
