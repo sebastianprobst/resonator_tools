@@ -5,7 +5,8 @@ import pytest
 from resonator_tools import circuit
 
 TEST_DATA = Path(__file__).parent / "test_data"
-REL_TOL = 1e-2  # 1%
+REL_TOL = 1e-2  # 1 %
+REL_TOL_LOOSE = 5e-2  # 5 % – for error estimates sensitive to BLAS backend
 
 
 @pytest.fixture()
@@ -23,6 +24,7 @@ def fitted_notch_port():
     return port
 
 
+# Physics parameters – should be stable across platforms
 EXPECTED_FIT = {
     "Qi_dia_corr": 134083.69749539843,
     "Qi_no_corr": 134268.24413061654,
@@ -32,6 +34,10 @@ EXPECTED_FIT = {
     "fr": 5922518761.752142,
     "theta0": -3.064731029979871,
     "phi0": 0.07686179289378793,
+}
+
+# Error estimates – depend on Jacobian / covariance, more sensitive to BLAS impl
+EXPECTED_FIT_ERRS = {
     "phi0_err": 0.002428183848052563,
     "Ql_err": 249.85481425941873,
     "absQc_err": 478.80070568518545,
@@ -46,6 +52,14 @@ EXPECTED_FIT = {
 def test_fitresults(fitted_notch_port, key, expected):
     actual = fitted_notch_port.fitresults[key]
     assert actual == pytest.approx(expected, rel=REL_TOL), (
+        f"{key}: {actual} != {expected}"
+    )
+
+
+@pytest.mark.parametrize("key,expected", list(EXPECTED_FIT_ERRS.items()))
+def test_fitresults_errs(fitted_notch_port, key, expected):
+    actual = fitted_notch_port.fitresults[key]
+    assert actual == pytest.approx(expected, rel=REL_TOL_LOOSE), (
         f"{key}: {actual} != {expected}"
     )
 

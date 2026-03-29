@@ -345,8 +345,6 @@ class circlefit(object):
             delay,
             args=(f_data, z_data),
             maxfev=maxiter,
-            ftol=1e-9,
-            xtol=1e-9,
         )
         return p_final[0][0]
 
@@ -375,8 +373,6 @@ class circlefit(object):
             delay,
             args=(f_data, z_data),
             maxfev=maxiter,
-            ftol=1e-9,
-            xtol=1e-9,
         )
         return p_final[0][0]
 
