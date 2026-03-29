@@ -40,20 +40,20 @@ def fitted_reflection_port():
 
 # Physics parameters – should be stable across platforms
 EXPECTED_FIT = {
-    "Qi": 930094.6001766999,
-    "Qc": 348030.868112033,
-    "Ql": 253262.7970861197,
-    "fr": 7112934302.445624,
-    "theta0": -0.004599190548892803,
+    "Qi": 930094.8990016765,
+    "Qc": 348030.9799289552,
+    "Ql": 253262.87845553007,
+    "fr": 7112934302.251634,
+    "theta0": -0.004588297296866701,
 }
 
 # Error estimates – depend on Jacobian / covariance, more sensitive to BLAS impl
 EXPECTED_FIT_ERRS = {
-    "Ql_err": 204.8556437035391,
-    "Qc_err": 252.03202246432647,
-    "fr_err": 7.632195390242183,
-    "chi_square": 3.068568136623117e-05,
-    "Qi_err": 1787.6795826026673,
+    "Ql_err": 204.6414300644987,
+    "Qc_err": 251.8921341730375,
+    "fr_err": 7.621016242343605,
+    "chi_square": 3.06342249507221e-05,
+    "Qi_err": 1786.2977088371454,
 }
 
 
@@ -77,4 +77,4 @@ def test_fitresults_errs(fitted_reflection_port, key, expected):
 
 def test_single_photon_limit(fitted_reflection_port):
     spl = fitted_reflection_port.get_single_photon_limit()
-    assert spl == pytest.approx(-155.44051531902153, rel=TOL_QI)
+    assert spl == pytest.approx(-155.44051671457905, rel=TOL_QI)

@@ -162,15 +162,35 @@ class circlefit(object):
     ) -> npt.NDArray[np.float64]:
         amplitude = np.absolute(z_data)
         amplitude_sqr = amplitude**2
-        A1a = np.minimum(amplitude_sqr[0], amplitude_sqr[-1])
-        A3a = -np.max(amplitude_sqr)
-        fra = f_data[np.argmin(amplitude_sqr)]
+        amp_sqr = np.array(amplitude_sqr)
+
+        # --- robust initial estimates ---
+        imin = np.argmin(amp_sqr)
+        fra = f_data[imin]
+        # baseline from edges (average both sides for slope robustness)
+        A1a = 0.5 * (amp_sqr[0] + amp_sqr[-1])
+        A3a = amp_sqr[imin] - A1a  # dip depth (negative)
+
+        # Ql from half-power bandwidth: find where |S|² crosses the midpoint
+        mid = A1a + 0.5 * A3a  # halfway between baseline and dip
+        above = amp_sqr >= mid
+        # find left and right crossing indices
+        i_left = imin
+        while i_left > 0 and amp_sqr[i_left] < mid:
+            i_left -= 1
+        i_right = imin
+        while i_right < len(amp_sqr) - 1 and amp_sqr[i_right] < mid:
+            i_right += 1
+        if i_right > i_left:
+            fwhm = f_data[i_right] - f_data[i_left]
+            Ql_est = fra / max(fwhm, f_data[1] - f_data[0])
+        else:
+            Ql_est = 1e3  # fallback
+
         # Normalize frequency so fr parameter is ~O(1)
         fr_scale = np.mean(f_data)
         f_norm = np.array(f_data) / fr_scale
         fra_n = fra / fr_scale
-        # Scale slope coefficients to match normalized frequency
-        amp_sqr = np.array(amplitude_sqr)
 
         def residuals(p, x_n, y):
             A2_n, A4_n, Ql = p
@@ -181,7 +201,7 @@ class circlefit(object):
             )
             return err
 
-        p0 = [0.0, 0.0, 1e3]
+        p0 = [0.0, 0.0, Ql_est]
         p_final = spopt.leastsq(
             residuals,
             p0,
