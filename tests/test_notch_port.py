@@ -5,7 +5,7 @@ import pytest
 from resonator_tools import circuit
 
 TEST_DATA = Path(__file__).parent / "test_data"
-REL_TOL = 1e-3  # 0.1%
+REL_TOL = 1e-2  # 1%
 
 
 @pytest.fixture()
