@@ -4,7 +4,7 @@ from _example_setup import ensure_repo_root_on_path
 
 ensure_repo_root_on_path()
 
-from resonator_tools import circuit  # noqa: E402
+from resonator_tools import circuit
 
 # ---------------------------------------
 # generate test data

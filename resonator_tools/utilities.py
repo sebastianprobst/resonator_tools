@@ -181,9 +181,8 @@ class save_load(object):
             phase_conversion = 1.0 / 180.0 * np.pi
         else:
             phase_conversion = 1.0
-        f = open(fname)
-        lines = f.readlines()
-        f.close()
+        with open(fname) as f:
+            lines = f.readlines()
         z_data_raw = []
         f_data = []
         if dtype == "realimag":
