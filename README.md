@@ -24,5 +24,8 @@ Where is it used?
 The "resonator_tools" have contributed to the following publications:
 https://scholar.google.de/scholar?oi=bibs&hl=de&cites=690000812747125148&as_sdt=5
 
-Questions? Contact the author:
+Institute where research was originally conducted:
 https://www.phi.kit.edu/ustinov_downloads.php
+
+Questions? Contact the author:
+https://www.linkedin.com/in/dr-sebastian-probst-9685969a/
