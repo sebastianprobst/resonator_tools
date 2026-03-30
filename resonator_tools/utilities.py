@@ -1,4 +1,3 @@
-import warnings
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -17,7 +16,7 @@ def Watt2dBm(x: float | FloatArray) -> float | FloatArray:
 
 def dBm2Watt(x: float | FloatArray) -> float | FloatArray:
     """
-    converts from units of watts to dBm
+    converts from units of dBm to watts
     """
     return 10 ** (x / 10.0) / 1000.0
 
@@ -105,7 +104,7 @@ class save_load(object):
         x: FloatArray,
         y: FloatArray,
         dtype: str,
-    ) -> ComplexArray | None:
+    ) -> ComplexArray:
         """
         dtype = 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg', 'linmagphasedeg'
         """
@@ -122,9 +121,8 @@ class save_load(object):
                 np.complex128
             )
         else:
-            warnings.warn(
-                "Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'.",
-                SyntaxWarning,
+            raise ValueError(
+                "Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'."
             )
 
     def add_data(self, f_data: FloatArray, z_data: ComplexArray) -> None:
@@ -229,9 +227,8 @@ class save_load(object):
                         )
                     )
         else:
-            warnings.warn(
-                "Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'.",
-                SyntaxWarning,
+            raise ValueError(
+                "Undefined input type! Use 'realimag', 'dBmagphaserad', 'linmagphaserad', 'dBmagphasedeg' or 'linmagphasedeg'."
             )
         self.f_data = np.array(f_data)
         self.z_data_raw = np.array(z_data_raw)

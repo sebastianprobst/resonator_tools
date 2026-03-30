@@ -180,7 +180,6 @@ class circlefit(object):
 
         # Ql from half-power bandwidth: find where |S|² crosses the midpoint
         mid = A1a + 0.5 * A3a  # halfway between baseline and dip
-        above = amp_sqr >= mid
         # find left and right crossing indices
         i_left = imin
         while i_left > 0 and amp_sqr[i_left] < mid:

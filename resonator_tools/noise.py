@@ -19,7 +19,7 @@ class noisedata(object):
         fr: float,
         Ql: float,
         fs: float,
-        gain_corr: list[float] = [1.0, 1.0],
+        gain_corr: list[float] | None = None,
         Z: float = 50,
     ) -> None:
         """
@@ -42,6 +42,7 @@ class noisedata(object):
         self.Z = Z
         self.fr = fr
         self.Ql = Ql
+        self.gain_corr: list[float] = gain_corr if gain_corr is not None else [1.0, 1.0]
         self.offrespoint = np.mean(np.imag(IQref))
         self.respoint = np.mean(np.imag(IQref))
         self.radius = (self.offrespoint - self.respoint) / self.offrespoint
