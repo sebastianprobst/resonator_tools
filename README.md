@@ -7,7 +7,8 @@ For installation of the module execute:
 python setup.py install
 
 Description of the algorithm:
-http://scitation.aip.org/content/aip/journal/rsi/86/2/10.1063/1.4907935
+http://scitation.aip.org/content/aip/journal/rsi/86/2/10.1063/1.4907935 \
+(Preprint: https://arxiv.org/abs/1410.3365)
 
 Where is it used?
 The "resonator_tools" have contributed to the following publications:

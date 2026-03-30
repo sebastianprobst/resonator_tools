@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "resonator-tools"
+version = "2.1.0"
+description = "A Python package for analyzing and fitting complex resonator scattering data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LGPL-3.0-only"
+keywords = ["resonator", "microwave", "fitting", "circle fit", "quantum", "superconducting", "circuit", "analysis", "cQED", "qubit", "measurement"]
+authors = [
+    { name = "Sebastian Probst"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "matplotlib>=3.7",
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/sebastianprobst/resonator_tools"
+Repository = "https://github.com/sebastianprobst/resonator_tools"
+Issues = "https://github.com/sebastianprobst/resonator_tools/issues"
+
+[dependency-groups]
+dev = [
+    "nbformat>=5.10.4",
+    "pre-commit>=4.2",
+    "pytest>=9.0.2",
+    "ruff>=0.15.8",
+]
+
+[tool.pyright]
+reportMissingTypeStubs = false
+reportConstantRedefinition = false
