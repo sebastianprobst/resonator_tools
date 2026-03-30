@@ -280,6 +280,16 @@ class circlefit(object):
                 ]
             )
 
+        def standardize(z_data) -> tuple[ComplexArray, complex]:
+            # Center data to preserve circle shape (no scaling)
+            mean = np.mean(z_data)
+            return z_data - mean, mean
+
+        def destandardize(z_data, mean) -> ComplexArray:
+            return z_data + mean
+
+        # Standardize data to improve numerical stability of moment calculations and SVD
+        z_data, mean = standardize(z_data)
         M = calc_moments(z_data)
 
         a0 = (
@@ -377,7 +387,7 @@ class circlefit(object):
             M[2][2] = M[2][2] - val
             return np.linalg.svd(M)
 
-        U, s, Vt = solve_eq_sys(x0[0], M)
+        _, s, Vt = solve_eq_sys(x0[0], M)
 
         A_vec = Vt[np.argmin(s), :]
 
@@ -396,6 +406,11 @@ class circlefit(object):
             xc, yc, r0 = self._fit_circle_iter(z_data, xc, yc, r0)
             r0 = self._fit_circle_iter_radialweight(z_data, xc, yc, r0)
             print("iterative r0: " + str(r0))
+
+        # De-standardize results
+        z_data = destandardize(z_data, mean)
+        xc += mean.real
+        yc += mean.imag
         return xc, yc, r0
 
     def _guess_delay(self, f_data: FloatArray, z_data: ComplexArray) -> float:
@@ -586,7 +601,7 @@ class circlefit(object):
         this is the radial weighting procedure
         it improves your fitting value for the radius = Ql/Qc
         use this to improve your fit in presence of heavy noise
-        after having used the standard algebraic fir_circle() function
+        after having used the standard algebraic fit_circle() function
         the weight here is: W=1/sqrt((xc-xi)^2+(yc-yi)^2)
         this works, because the center of the circle is usually much less
         corrupted by noise than the radius

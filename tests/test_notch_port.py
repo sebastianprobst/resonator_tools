@@ -52,25 +52,25 @@ def fitted_notch_port():
 
 # Physics parameters – should be stable across platforms
 EXPECTED_FIT = {
-    "Qi_dia_corr": 131942.67358723632,
-    "Qi_no_corr": 132113.9433815557,
-    "absQc": 283026.8546805501,
-    "Qc_dia_corr": 283816.09908586234,
-    "Ql": 90070.14976430265,
-    "fr": 5922518836.981035,
-    "theta0": -3.0669993055994165,
-    "phi0": 0.07459383464378908,
+    "Qi_dia_corr": 127756.00296208196,
+    "Qi_no_corr": 127902.2147023118,
+    "absQc": 273317.60431328195,
+    "Qc_dia_corr": 273987.67635913135,
+    "Ql": 87129.11290017859,
+    "fr": 5922518993.515957,
+    "theta0": -3.071640871448464,
+    "phi0": 0.06995178214132913,
 }
 
 # Error estimates – depend on Jacobian / covariance, more sensitive to BLAS impl
 EXPECTED_FIT_ERRS = {
-    "phi0_err": 0.004355197164286936,
-    "Ql_err": 407.8898387419578,
-    "absQc_err": 713.365872966948,
-    "fr_err": 176.2677364082469,
-    "chi_square": 2.1858663404166833e-05,
-    "Qi_no_corr_err": 825.1196040884977,
-    "Qi_dia_corr_err": 819.1718123170862,
+    "phi0_err": 0.012190368694798224,
+    "Ql_err": 823.7869748980518,
+    "absQc_err": 1122.0098453263265,
+    "fr_err": 458.8122462688606,
+    "chi_square": 7.343748879768608e-05,
+    "Qi_no_corr_err": 1714.6461190120976,
+    "Qi_dia_corr_err": 1711.4071916713567,
 }
 
 
@@ -94,9 +94,9 @@ def test_fitresults_errs(fitted_notch_port, key, expected):
 
 def test_single_photon_limit(fitted_notch_port):
     spl = fitted_notch_port.get_single_photon_limit(diacorr=True)
-    assert spl == pytest.approx(-148.9373593528299, rel=TOL_QI)
+    assert spl == pytest.approx(-148.80206724596923, rel=TOL_QI)
 
 
 def test_photons_in_resonator(fitted_notch_port):
     photons = fitted_notch_port.get_photons_in_resonator(-140, unit="dBm", diacorr=True)
-    assert photons == pytest.approx(7.829534376688001, rel=TOL_QI)
+    assert photons == pytest.approx(7.5893874464641415, rel=TOL_QI)
