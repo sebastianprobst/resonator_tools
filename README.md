@@ -8,7 +8,7 @@ It supports transmission, reflection and notch-type measurements.
 
 To install the module from PyPI, run:
 
-	pip install resonator-tools
+	pip install resonator_tools
 
 To install from a local clone of this repository, run the following command inside the project directory:
 
