@@ -3,8 +3,18 @@
 A small python library to fit complex resonator scattering data.
 It supports transmission, reflection and notch-type measurements.
 
-For installation of the module execute:
-python setup.py install
+
+## Installation
+
+To install the module from PyPI, run:
+
+	pip install resonator-tools
+
+To install from a local clone of this repository, run the following command inside the project directory:
+
+	pip install .
+
+This will install the package from your local source instead of downloading it from PyPI.
 
 Description of the algorithm:
 http://scitation.aip.org/content/aip/journal/rsi/86/2/10.1063/1.4907935 \
