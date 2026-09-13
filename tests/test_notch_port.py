@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from resonator_tools import circuit
+from resonator_tools.utilities import dBm2Watt
 
 TEST_DATA = Path(__file__).parent / "test_data"
 
@@ -100,6 +102,55 @@ def test_single_photon_limit(fitted_notch_port):
 def test_photons_in_resonator(fitted_notch_port):
     photons = fitted_notch_port.get_photons_in_resonator(-140, unit="dBm", diacorr=True)
     assert photons == pytest.approx(3.7946937232320708, rel=TOL_QI)
+
+
+def test_photons_in_resonator_diacorr_false(fitted_notch_port):
+    photons = fitted_notch_port.get_photons_in_resonator(
+        -140, unit="dBm", diacorr=False
+    )
+    assert photons == pytest.approx(3.8039968860959728, rel=TOL_QI)
+
+
+def test_single_photon_limit_diacorr_false(fitted_notch_port):
+    spl = fitted_notch_port.get_single_photon_limit(unit="dBm", diacorr=False)
+    assert spl == pytest.approx(-145.80240152757517, rel=TOL_QI)
+
+
+def test_single_photon_limit_watt_matches_dbm(fitted_notch_port):
+    spl_dbm = fitted_notch_port.get_single_photon_limit(unit="dBm", diacorr=True)
+    spl_watt = fitted_notch_port.get_single_photon_limit(unit="watt", diacorr=True)
+    assert spl_watt == pytest.approx(dBm2Watt(spl_dbm), rel=1e-9)
+
+
+def test_unfitted_port_warns():
+    port = circuit.notch_port()
+    with pytest.warns(UserWarning):
+        assert port.get_single_photon_limit() is None
+    with pytest.warns(UserWarning):
+        assert port.get_photons_in_resonator(-140) is None
+
+
+def test_circlefit_calc_errors_false(fitted_notch_port):
+    port = fitted_notch_port
+    result = port.circlefit(port.f_data, port.z_data, calc_errors=False)
+
+    # no covariance-based error keys should be produced by this branch
+    assert "chi_square" in result
+    assert "Qi_dia_corr_err" not in result
+
+    # central fit values should agree with the calc_errors=True autofit result
+    assert result["fr"] == pytest.approx(port.fitresults["fr"], rel=TOL_FREQ)
+    assert result["Ql"] == pytest.approx(port.fitresults["Ql"], rel=TOL_Q)
+    assert result["absQc"] == pytest.approx(port.fitresults["absQc"], rel=TOL_Q)
+
+    # chi_square must match the package's own (already-correct) residual statistic
+    p = [result["fr"], result["absQc"], result["Ql"], result["phi0"]]
+    expected_chi_square = (
+        port._residuals_notch_ideal(p, port.f_data, port.z_data) ** 2
+    ).sum() / (len(port.f_data) - len(p))
+    assert np.isfinite(result["chi_square"])
+    assert result["chi_square"] >= 0
+    assert result["chi_square"] == pytest.approx(expected_chi_square, rel=1e-9)
 
 
 def test_photons_in_resonator_matches_single_photon_limit(fitted_notch_port):

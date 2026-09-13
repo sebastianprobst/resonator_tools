@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from resonator_tools import circuit
+from resonator_tools.utilities import dBm2Watt
 
 TEST_DATA = Path(__file__).parent / "test_data"
 
@@ -79,6 +80,31 @@ def test_fitresults_errs(fitted_reflection_port, key, expected):
 def test_single_photon_limit(fitted_reflection_port):
     spl = fitted_reflection_port.get_single_photon_limit()
     assert spl == pytest.approx(-155.44065663450948, rel=TOL_QI)
+
+
+def test_single_photon_limit_watt_matches_dbm(fitted_reflection_port):
+    spl_dbm = fitted_reflection_port.get_single_photon_limit(unit="dBm")
+    spl_watt = fitted_reflection_port.get_single_photon_limit(unit="watt")
+    assert spl_watt == pytest.approx(dBm2Watt(spl_dbm), rel=1e-9)
+
+
+def test_photons_in_resonator(fitted_reflection_port):
+    photons = fitted_reflection_port.get_photons_in_resonator(-140, unit="dBm")
+    assert photons == pytest.approx(34.99980812271039, rel=TOL_QI)
+
+
+def test_photons_in_resonator_matches_single_photon_limit(fitted_reflection_port):
+    spl = fitted_reflection_port.get_single_photon_limit(unit="dBm")
+    photons = fitted_reflection_port.get_photons_in_resonator(spl, unit="dBm")
+    assert photons == pytest.approx(1.0, rel=1e-9)
+
+
+def test_unfitted_port_warns():
+    port = circuit.reflection_port()
+    with pytest.warns(UserWarning):
+        assert port.get_single_photon_limit() is None
+    with pytest.warns(UserWarning):
+        assert port.get_photons_in_resonator(-140) is None
 
 
 def test_circlefit_calc_errors_false(fitted_reflection_port):
