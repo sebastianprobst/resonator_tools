@@ -3,6 +3,11 @@
 A small python library to fit complex resonator scattering data.
 It supports transmission, reflection and notch-type measurements.
 
+> **Scientific correction (v2.2.0):** notch (hanger) photon-number estimates from
+> `notch_port.get_photons_in_resonator()`/`get_single_photon_limit()` were too high by a factor
+> of 2. Reflection-mode photon numbers and all fitted resonance parameters (`fr`, `Qi`, `Qc`,
+> `Ql`) are unaffected. See [docs/photon_number_derivation.md](docs/photon_number_derivation.md)
+> and the [changelog](CHANGELOG.md) for the derivation and details.
 
 ## Installation
 
