@@ -203,7 +203,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
 
         # calculation of the error
         p: list[float] = [fr, Qc, Ql]
-        # chi_square, errors = rt.get_errors(rt.residuals_notch_ideal,f_data,z_data,p)
+        # chi_square, errors = rt.get_errors(rt.residuals_directrefl,f_data,z_data,p)
         if calc_errors is True:
             chi_square, cov = self._get_cov_fast_directrefl(f_data, z_data, p)
             # chi_square, cov = rt.get_cov(rt.residuals_notch_ideal,f_data,z_data,p)
@@ -231,10 +231,9 @@ class reflection_port(circlefit, save_load, plotting, calibration):
                 print("WARNING: Error calculation failed!")
         else:
             # just calc chisquared:
+            residuals = self._residuals_directrefl(p, f_data, z_data)
             chi_square = (
-                1.0
-                / float(len(f_data) - len(p))
-                * (self._residuals_notch_ideal(p, f_data, z_data) ** 2).sum()
+                1.0 / float(len(f_data) - len(p)) * (np.abs(residuals) ** 2).sum()
             )
             errors_dict = {"chi_square": chi_square}
             results.update(errors_dict)

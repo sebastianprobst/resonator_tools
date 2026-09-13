@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 from resonator_tools import circuit
@@ -78,3 +79,26 @@ def test_fitresults_errs(fitted_reflection_port, key, expected):
 def test_single_photon_limit(fitted_reflection_port):
     spl = fitted_reflection_port.get_single_photon_limit()
     assert spl == pytest.approx(-155.44065663450948, rel=TOL_QI)
+
+
+def test_circlefit_calc_errors_false(fitted_reflection_port):
+    port = fitted_reflection_port
+    result = port.circlefit(port.f_data, port.z_data, calc_errors=False)
+
+    # no covariance-based error keys should be produced by this branch
+    assert "chi_square" in result
+    assert "Qi_err" not in result
+
+    # central fit values should agree with the calc_errors=True autofit result
+    assert result["fr"] == pytest.approx(port.fitresults["fr"], rel=TOL_FREQ)
+    assert result["Ql"] == pytest.approx(port.fitresults["Ql"], rel=TOL_Q)
+    assert result["Qc"] == pytest.approx(port.fitresults["Qc"], rel=TOL_Q)
+
+    # chi_square must be a finite, nonnegative sum of squared complex magnitudes
+    p = [result["fr"], result["Qc"], result["Ql"]]
+    expected_chi_square = np.sum(
+        np.abs(port._residuals_directrefl(p, port.f_data, port.z_data)) ** 2
+    ) / (len(port.f_data) - len(p))
+    assert np.isfinite(result["chi_square"])
+    assert result["chi_square"] >= 0
+    assert result["chi_square"] == pytest.approx(expected_chi_square, rel=1e-9)
