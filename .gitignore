@@ -61,3 +61,5 @@ target/
 uv.lock
 .python-version
 .pytest_cache/
+tmp/
+.vscode/mcp.json
