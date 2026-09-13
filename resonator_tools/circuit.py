@@ -455,6 +455,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             fr = self.fitresults["fr"]
             k_c = 2 * np.pi * fr / self.fitresults["Qc"]
             k_i = 2 * np.pi * fr / self.fitresults["Qi"]
+            # one-port reflection -> coefficient 4 (Clerk et al. 2010, arXiv:0810.4729, Eq. 491; docs/photon_number_derivation.md)
             if unit == "dBm":
                 return float(
                     Watt2dBm(
@@ -480,6 +481,7 @@ class reflection_port(circlefit, save_load, plotting, calibration):
             fr = self.fitresults["fr"]
             k_c = 2 * np.pi * fr / self.fitresults["Qc"]
             k_i = 2 * np.pi * fr / self.fitresults["Qi"]
+            # one-port reflection -> coefficient 4 (Clerk et al. 2010, arXiv:0810.4729, Eq. 491; docs/photon_number_derivation.md)
             return 4.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2) * power
         else:
             warnings.warn("Please perform the fit first", UserWarning)
@@ -955,6 +957,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
         returns the amout of power in units of W necessary
         to maintain one photon on average in the cavity
         unit can be 'dBm' or 'watt'
+        assumes symmetric coupling to both feedline directions, driven from one side
         """
         if self.fitresults != {}:
             fr = self.fitresults["fr"]
@@ -964,14 +967,15 @@ class notch_port(circlefit, save_load, plotting, calibration):
             else:
                 k_c = 2 * np.pi * fr / self.fitresults["absQc"]
                 k_i = 2 * np.pi * fr / self.fitresults["Qi_no_corr"]
+            # symmetric notch driven from one side -> coefficient 2 (Clerk et al. 2010, arXiv:0810.4729, Eq. 493; McRae et al. 2020, arXiv:2006.04718, Eq. 20; docs/photon_number_derivation.md)
             if unit == "dBm":
                 return float(
                     Watt2dBm(
-                        1.0 / (4.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2))
+                        1.0 / (2.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2))
                     )
                 )
             elif unit == "watt":
-                return 1.0 / (4.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2))
+                return 1.0 / (2.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2))
         else:
             warnings.warn("Please perform the fit first", UserWarning)
             return None
@@ -986,6 +990,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
         returns the average number of photons
         for a given power in units of W
         unit can be 'dBm' or 'watt'
+        assumes symmetric coupling to both feedline directions, driven from one side
         """
         if self.fitresults != {}:
             if unit == "dBm":
@@ -997,7 +1002,8 @@ class notch_port(circlefit, save_load, plotting, calibration):
             else:
                 k_c = 2 * np.pi * fr / self.fitresults["absQc"]
                 k_i = 2 * np.pi * fr / self.fitresults["Qi_no_corr"]
-            return 4.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2) * power
+            # symmetric notch driven from one side -> coefficient 2 (Clerk et al. 2010, arXiv:0810.4729, Eq. 493; McRae et al. 2020, arXiv:2006.04718, Eq. 20; docs/photon_number_derivation.md)
+            return 2.0 * k_c / (2.0 * np.pi * hbar * fr * (k_c + k_i) ** 2) * power
         else:
             warnings.warn("Please perform the fit first", UserWarning)
             return None

@@ -94,9 +94,38 @@ def test_fitresults_errs(fitted_notch_port, key, expected):
 
 def test_single_photon_limit(fitted_notch_port):
     spl = fitted_notch_port.get_single_photon_limit(diacorr=True)
-    assert spl == pytest.approx(-148.80206724596923, rel=TOL_QI)
+    assert spl == pytest.approx(-145.79176728932942, rel=TOL_QI)
 
 
 def test_photons_in_resonator(fitted_notch_port):
     photons = fitted_notch_port.get_photons_in_resonator(-140, unit="dBm", diacorr=True)
-    assert photons == pytest.approx(7.5893874464641415, rel=TOL_QI)
+    assert photons == pytest.approx(3.7946937232320708, rel=TOL_QI)
+
+
+def test_photons_in_resonator_matches_single_photon_limit(fitted_notch_port):
+    # the single-photon power must convert back to exactly one photon
+    spl = fitted_notch_port.get_single_photon_limit(unit="dBm", diacorr=True)
+    photons = fitted_notch_port.get_photons_in_resonator(spl, unit="dBm", diacorr=True)
+    assert photons == pytest.approx(1.0, rel=1e-9)
+
+
+def test_notch_photon_number_is_half_of_equivalent_reflection():
+    # for identical fr, Qi, Qc and incident power, a symmetric notch driven
+    # from one side stores half the photons of a genuine one-port reflection
+    # resonator, since only half of its total external coupling is driven.
+    fr, Qi, Qc = 6e9, 8e5, 2e5
+
+    notch = circuit.notch_port()
+    notch.fitresults = {
+        "fr": fr,
+        "Qc_dia_corr": Qc,
+        "Qi_dia_corr": Qi,
+        "absQc": Qc,
+        "Qi_no_corr": Qi,
+    }
+    refl = circuit.reflection_port()
+    refl.fitresults = {"fr": fr, "Qc": Qc, "Qi": Qi}
+
+    n_notch = notch.get_photons_in_resonator(-140, unit="dBm", diacorr=True)
+    n_refl = refl.get_photons_in_resonator(-140, unit="dBm")
+    assert n_refl == pytest.approx(2.0 * n_notch, rel=1e-12)
