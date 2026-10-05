@@ -1,3 +1,5 @@
+from typing import overload
+
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -6,6 +8,11 @@ import matplotlib.pyplot as plt
 FloatArray = npt.NDArray[np.float64]
 ComplexArray = npt.NDArray[np.complex128]
 
+@overload
+def Watt2dBm(x: float) -> float: ...
+
+@overload
+def Watt2dBm(x: FloatArray) -> FloatArray: ...
 
 def Watt2dBm(x: float | FloatArray) -> float | FloatArray:
     """
@@ -13,6 +20,11 @@ def Watt2dBm(x: float | FloatArray) -> float | FloatArray:
     """
     return 10.0 * np.log10(x * 1000.0)
 
+@overload
+def dBm2Watt(x: float) -> float: ...
+
+@overload
+def dBm2Watt(x: FloatArray) -> FloatArray: ...
 
 def dBm2Watt(x: float | FloatArray) -> float | FloatArray:
     """
