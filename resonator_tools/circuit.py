@@ -640,7 +640,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
                 [3] (fitting techniques) N. CHERNOV AND C. LESORT, "Least Squares Fitting of Circles", Journal of Mathematical Imaging and Vision 23, 239, (2005)
                 [4] (further fitting techniques) P. J. Petersan, S. M. Anlage, J. Appl. Phys, 84, 3392 (1998)
         the program fits the circle with the algebraic technique described in [3], the rest of the fitting is done with the scipy.optimize least square fitting toolbox
-        also, check out [5] S. Probst et al. "Efficient and reliable analysis of noisy complex scatterung resonator data for superconducting quantum circuits" (in preparation)
+        also, check out [5] S. Probst et al. "Efficient and robust analysis of complex scattering data under noise in microwave resonators", Rev. Sci. Instrum. 86, 024706 (2015), arXiv:1410.3365
         """
 
         if fr is None:
@@ -710,6 +710,14 @@ class notch_port(circlefit, save_load, plotting, calibration):
                     + dabsQc * dphi0 * cov[1][3]
                 )
                 Qi_dia_corr_err = np.sqrt(err1 + 2 * err2)  # including correlations
+                # calc Qc dia corr (= absQc / cos(phi0)) with error prop
+                dabsQc = 1.0 / np.cos(phi0)
+                dphi0 = absQc * np.sin(phi0) / np.cos(phi0) ** 2
+                Qc_dia_corr_err = np.sqrt(
+                    (dabsQc**2 * cov[1][1])
+                    + (dphi0**2 * cov[3][3])
+                    + (2 * dabsQc * dphi0 * cov[1][3])
+                )  # with correlations
                 errors_dict: dict[str, float] = {
                     "phi0_err": phi0_err,
                     "Ql_err": Ql_err,
@@ -718,6 +726,7 @@ class notch_port(circlefit, save_load, plotting, calibration):
                     "chi_square": chi_square,
                     "Qi_no_corr_err": Qi_no_corr_err,
                     "Qi_dia_corr_err": Qi_dia_corr_err,
+                    "Qc_dia_corr_err": Qc_dia_corr_err,
                 }
                 results.update(errors_dict)
             else:

@@ -34,6 +34,7 @@ _PARAM_TOL: dict[str, float] = {
     "chi_square": TOL_CHI2,
     "Qi_no_corr_err": TOL_ERR,
     "Qi_dia_corr_err": TOL_ERR,
+    "Qc_dia_corr_err": TOL_ERR,
 }
 
 
@@ -73,6 +74,7 @@ EXPECTED_FIT_ERRS = {
     "chi_square": 7.343748879768608e-05,
     "Qi_no_corr_err": 1714.6461190120976,
     "Qi_dia_corr_err": 1711.4071916713567,
+    "Qc_dia_corr_err": 1162.891734122851,
 }
 
 
@@ -92,6 +94,25 @@ def test_fitresults_errs(fitted_notch_port, key, expected):
     assert actual == pytest.approx(expected, rel=tol), (
         f"{key}: {actual} != {expected} (rel_tol={tol})"
     )
+
+
+def test_qc_dia_corr_err_consistent_with_covariance(fitted_notch_port):
+    # Qc_dia_corr = absQc / cos(phi0); propagate the covariance via a numerical Jacobian
+    port = fitted_notch_port
+    res = port.fitresults
+    p = [res["fr"], res["absQc"], res["Ql"], res["phi0"]]
+    _, cov = port._get_cov_fast_notch(port.f_data, port.z_data, p)
+
+    def qc(absqc, phi0):
+        return absqc / np.cos(phi0)
+
+    h = 1e-6
+    d_absqc = (qc(p[1] * (1 + h), p[3]) - qc(p[1] * (1 - h), p[3])) / (2 * p[1] * h)
+    d_phi0 = (qc(p[1], p[3] + h) - qc(p[1], p[3] - h)) / (2 * h)
+    jac = np.array([d_absqc, d_phi0])
+    sub_cov = cov[np.ix_([1, 3], [1, 3])]
+    expected = float(np.sqrt(jac @ sub_cov @ jac))
+    assert res["Qc_dia_corr_err"] == pytest.approx(expected, rel=1e-6)
 
 
 def test_single_photon_limit(fitted_notch_port):
@@ -137,6 +158,7 @@ def test_circlefit_calc_errors_false(fitted_notch_port):
     # no covariance-based error keys should be produced by this branch
     assert "chi_square" in result
     assert "Qi_dia_corr_err" not in result
+    assert "Qc_dia_corr_err" not in result
 
     # central fit values should agree with the calc_errors=True autofit result
     assert result["fr"] == pytest.approx(port.fitresults["fr"], rel=TOL_FREQ)
