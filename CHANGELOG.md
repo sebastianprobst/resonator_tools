@@ -3,6 +3,19 @@
 All notable changes to this project are documented here. This changelog starts at v2.2.0;
 earlier releases are available as [GitHub tags](https://github.com/sebastianprobst/resonator_tools/tags).
 
+## [Unreleased]
+
+### Added
+
+- `notch_port.circlefit()` now also returns `Qc_dia_corr_err`, the error of the diameter-corrected
+  coupling quality factor `Qc_dia_corr`, propagated from the fit covariance
+  ([#23](https://github.com/sebastianprobst/resonator_tools/issues/23)).
+
+### Fixed
+
+- Stale "(in preparation)" reference in the `circlefit` docstring replaced by the published
+  paper (Rev. Sci. Instrum. 86, 024706 (2015)).
+
 ## [2.2.0] - 2026-09-13
 
 ### Fixed
